@@ -48,22 +48,28 @@ NSString *BSNESEmulatorKeys[] = { @"Joypad@ Up", @"Joypad@ Down", @"Joypad@ Left
 
 @implementation BSNESGameCore
 
-static BSNESGameCore *current;
+static __weak BSNESGameCore *_current;
 
 static void audio_callback(int16_t left, int16_t right)
 {
+    GET_CURRENT_AND_RETURN();
+
 	[[current ringBufferAtIndex:0] write:&left maxLength:2];
     [[current ringBufferAtIndex:0] write:&right maxLength:2];
 }
 
 static size_t audio_batch_callback(const int16_t *data, size_t frames)
 {
+    GET_CURRENT_AND_RETURN(frames);
+
     [[current ringBufferAtIndex:0] write:data maxLength:frames << 2];
     return frames;
 }
 
 static void video_callback(const void *data, unsigned width, unsigned height, size_t pitch)
 {
+    GET_CURRENT_AND_RETURN();
+
     current->videoWidth  = width;
     current->videoHeight = height;
     
@@ -84,6 +90,8 @@ static void input_poll_callback(void)
 
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned _id)
 {
+    GET_CURRENT_AND_RETURN(0);
+
 	if(port == 0 & device == RETRO_DEVICE_JOYPAD)
         return current->pad[0][_id];
     else if(port == 1 & device == RETRO_DEVICE_JOYPAD)
@@ -189,7 +197,7 @@ static void writeSaveFile(const char* path, int type)
         videoBuffer = (uint32_t *)malloc(512 * 480 * sizeof(uint32_t));
     }
 	
-	current = self;
+	_current = self;
     
 	return self;
 }
@@ -262,8 +270,8 @@ static void writeSaveFile(const char* path, int type)
         struct retro_system_av_info avInfo;
         retro_get_system_av_info(&avInfo);
         
-        current->frameInterval = avInfo.timing.fps;
-        current->sampleRate = avInfo.timing.sample_rate;
+        frameInterval = avInfo.timing.fps;
+        sampleRate = avInfo.timing.sample_rate;
         
         //retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
         
@@ -286,7 +294,7 @@ static void writeSaveFile(const char* path, int type)
 
 - (OEIntRect)screenRect
 {
-    return OEIntRectMake(0, 0, current->videoWidth, current->videoHeight);
+    return OEIntRectMake(0, 0, videoWidth, videoHeight);
 }
 
 - (OEIntSize)bufferSize

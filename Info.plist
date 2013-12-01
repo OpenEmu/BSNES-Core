@@ -26,6 +26,8 @@
 	<string>BSNESGameCore</string>
 	<key>OEGameCorePlayerCount</key>
 	<string>8</string>
+	<key>OEGameCoreRequiresFiles</key>
+	<true/>
 	<key>OEProjectURL</key>
 	<string>http://byuu.org/bsnes/</string>
 	<key>OESystemIdentifiers</key>

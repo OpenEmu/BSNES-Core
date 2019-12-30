@@ -1,0 +1,3 @@
+[submodule "bsnes"]
+	path = bsnes
+	url = git@github.com:byuu/bsnes.git

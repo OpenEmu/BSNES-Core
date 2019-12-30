@@ -25,375 +25,75 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "BSNESGameCore.h"
-#import <OpenEmuBase/OERingBuffer.h>
-#import "OESNESSystemResponderClient.h"
 #import <OpenGL/gl.h>
+#import "BSNESGameCore.h"
+#import "OESNESSystemResponderClient.h"
 
-#include "libretro.h"
+#define SYS_PARAM_H__BSD BSD
+#undef BSD
 
-@interface BSNESGameCore () <OESNESSystemResponderClient>
-{
-    uint32_t *videoBuffer;
-    int videoWidth, videoHeight;
-    int16_t pad[2][12];
+#include "program.mm"
+
+
+@implementation BSNESGameCore {
     NSString *romName;
-    double sampleRate;
-}
-
-@end
-
-NSUInteger BSNESEmulatorValues[] = { RETRO_DEVICE_ID_JOYPAD_UP, RETRO_DEVICE_ID_JOYPAD_DOWN, RETRO_DEVICE_ID_JOYPAD_LEFT, RETRO_DEVICE_ID_JOYPAD_RIGHT, RETRO_DEVICE_ID_JOYPAD_A, RETRO_DEVICE_ID_JOYPAD_B, RETRO_DEVICE_ID_JOYPAD_X, RETRO_DEVICE_ID_JOYPAD_Y, RETRO_DEVICE_ID_JOYPAD_L, RETRO_DEVICE_ID_JOYPAD_R, RETRO_DEVICE_ID_JOYPAD_START, RETRO_DEVICE_ID_JOYPAD_SELECT };
-NSString *BSNESEmulatorKeys[] = { @"Joypad@ Up", @"Joypad@ Down", @"Joypad@ Left", @"Joypad@ Right", @"Joypad@ A", @"Joypad@ B", @"Joypad@ X", @"Joypad@ Y", @"Joypad@ L", @"Joypad@ R", @"Joypad@ Start", @"Joypad@ Select"};
-
-@implementation BSNESGameCore
-
-@synthesize frameInterval;
-
-static __weak BSNESGameCore *_current;
-
-static void audio_callback(int16_t left, int16_t right)
-{
-    BSNESGameCore *current = _current;
-	[[current ringBufferAtIndex:0] write:&left maxLength:2];
-    [[current ringBufferAtIndex:0] write:&right maxLength:2];
-}
-
-static size_t audio_batch_callback(const int16_t *data, size_t frames)
-{
-    BSNESGameCore *current = _current;
-    [[current ringBufferAtIndex:0] write:data maxLength:frames << 2];
-    return frames;
-}
-
-static void video_callback(const void *data, unsigned width, unsigned height, size_t pitch)
-{
-    BSNESGameCore *current = _current;
-    current->videoWidth  = width;
-    current->videoHeight = height;
-    
-    dispatch_queue_t the_queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    
-    dispatch_apply(height, the_queue, ^(size_t y) {
-        const uint16_t *src = (uint16_t*)data + y * (pitch >> 1); //pitch is in bytes not pixels
-        uint32_t *dst = current->videoBuffer + y * 512;
-        
-        memcpy(dst, src, sizeof(uint32_t)*width);
-    });
-}
-
-static void input_poll_callback(void)
-{
-	//NSLog(@"poll callback");
-}
-
-static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned _id)
-{
-    BSNESGameCore *current = _current;
-
-	if(port == 0 & device == RETRO_DEVICE_JOYPAD)
-        return current->pad[0][_id];
-    else if(port == 1 & device == RETRO_DEVICE_JOYPAD)
-        return current->pad[1][_id];
-    
-    return 0;
-}
-
-static bool environment_callback(unsigned cmd, void *data)
-{
-    switch(cmd)
-    {
-        case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY :
-        {
-            /* Path where BSNES will look for the required coprocessor chips:
-             cx4.rom (3,072 bytes)
-             dsp1.rom (8,192 bytes)
-             dsp1b.rom (8,192 bytes)
-             dsp2.rom (8,192 bytes)
-             dsp3.rom (8,192 bytes)
-             dsp4.rom (8,192 bytes)
-             st010.rom (53,248 bytes)
-             st011.rom (53,248 bytes)
-             st018.rom (163,840 bytes)
-             */
-
-            // FIXME: Build a path in a more appropriate place
-            NSString *appSupportPath = [NSString pathWithComponents:@[
-                                        [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject],
-                                        @"OpenEmu", @"BIOS"]];
-            
-            *(const char **)data = [appSupportPath UTF8String];
-            NSLog(@"Environ SYSTEM_DIRECTORY: \"%@\".\n", appSupportPath);
-            break;
-        }
-        default :
-            NSLog(@"Environ UNSUPPORTED (#%u).\n", cmd);
-            return NO;
-    }
-    
-    return YES;
-}
-
-
-static void loadSaveFile(const char* path, int type)
-{
-    FILE *file;
-    
-    file = fopen(path, "rb");
-    if(file == NULL) return;
-    
-    size_t size = retro_get_memory_size(type);
-    void *data = retro_get_memory_data(type);
-    
-    if(size == 0 || !data)
-    {
-        fclose(file);
-        return;
-    }
-    
-    int rc = fread(data, sizeof(uint8_t), size, file);
-    if(rc != size)
-        NSLog(@"Couldn't load save file: %s.", path);
-    else
-        NSLog(@"Loaded save file: %s", path);
-    
-    fclose(file);
-}
-
-static void writeSaveFile(const char* path, int type)
-{
-    size_t size = retro_get_memory_size(type);
-    void *data = retro_get_memory_data(type);
-    
-    if(data != NULL && size > 0)
-    {
-        FILE *file = fopen(path, "wb");
-        if(file != NULL)
-        {
-            NSLog(@"Saving state %s. Size: %d bytes.", path, (int)size);
-            retro_serialize(data, size);
-            if(fwrite(data, sizeof(uint8_t), size, file) != size)
-                NSLog(@"Did not save state properly.");
-            fclose(file);
-        }
-    }
-}
-
-- (oneway void)didPushSNESButton:(OESNESButton)button forPlayer:(NSUInteger)player;
-{
-    pad[player-1][BSNESEmulatorValues[button]] = 1;
-}
-
-- (oneway void)didReleaseSNESButton:(OESNESButton)button forPlayer:(NSUInteger)player;
-{
-    pad[player-1][BSNESEmulatorValues[button]] = 0;
-}
-
-- (oneway void)leftMouseDownAtPoint:(OEIntPoint)point
-{
-}
-
-
-- (oneway void)leftMouseUp
-{
-}
-
-
-- (oneway void)mouseMovedAtPoint:(OEIntPoint)point
-{
-}
-
-
-- (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
-{
-}
-
-
-- (oneway void)rightMouseUp
-{
 }
 
 
 - (id)init
 {
-    if((self = [super init]))
-    {
-        videoBuffer = (uint32_t *)malloc(512 * 480 * sizeof(uint32_t));
-    }
-    
-    _current = self;
-    
+    self = [super init];
+    emulator = new SuperFamicom::Interface;
+    program = new Program(self);
+    [self configEmulator];
     return self;
 }
 
-#pragma mark Exectuion
-
-- (void)executeFrame
+- (void)configEmulator
 {
-    [self executeFrameSkippingFrame:NO];
-}
-
-- (void)executeFrameSkippingFrame:(BOOL)skip
-{
-    retro_run();
-}
-
-- (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
-{
-    memset(pad, 0, sizeof(int16_t) * 24);
-    
-    uint8_t *data;
-    size_t size;
-    romName = [path copy];
-    
-    //load cart, read bytes, get length
-    NSData *dataObj = [NSData dataWithContentsOfFile:[romName stringByStandardizingPath]];
-    
-    if(dataObj == nil) return NO;
-    
-    size = [dataObj length];
-    data = (uint8_t *)[dataObj bytes];
-    const char *meta = NULL;
-    
-    //remove copier header, if it exists
-    if((size & 0x7fff) == 512) memmove(data, data + 512, size -= 512);
-    
-    retro_set_environment(environment_callback);
-    retro_init();
-    
-    retro_set_audio_sample(audio_callback);
-    retro_set_audio_sample_batch(audio_batch_callback);
-    retro_set_video_refresh(video_callback);
-    retro_set_input_poll(input_poll_callback);
-    retro_set_input_state(input_state_callback);
-    
-    const char *fullPath = [path UTF8String];
-    
-    struct retro_game_info gameInfo = {NULL};
-    gameInfo.path = fullPath;
-    gameInfo.data = data;
-    gameInfo.size = size;
-    gameInfo.meta = meta;
-    
-    if(retro_load_game(&gameInfo))
-    {
-        NSString *path = romName;
-        NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
-        
-        NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-        
-        if([batterySavesDirectory length] != 0)
-        {
-            [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
-            
-            NSString *filePath = [batterySavesDirectory stringByAppendingPathComponent:[extensionlessFilename stringByAppendingPathExtension:@"sav"]];
-            
-            loadSaveFile([filePath UTF8String], RETRO_MEMORY_SAVE_RAM);
-        }
-        
-        struct retro_system_av_info avInfo;
-        retro_get_system_av_info(&avInfo);
-        
-        frameInterval = avInfo.timing.fps;
-        sampleRate = avInfo.timing.sample_rate;
-        
-        //retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
-        
-        retro_get_region();
-        
-        retro_run();
-        
-        return YES;
-    }
-    
-    return NO;
-}
-
-#pragma mark Video
-
-- (const void *)videoBuffer
-{
-    return videoBuffer;
-}
-
-- (OEIntRect)screenRect
-{
-    return OEIntRectMake(0, 0, videoWidth, videoHeight);
-}
-
-- (OEIntSize)bufferSize
-{
-    return OEIntSizeMake(512, 480);
-}
-
-- (void)resetEmulation
-{
-    retro_reset();
-}
-
-- (void)stopEmulation
-{
-    NSString *path = romName;
-    NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
-    
-    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-    
-    if([batterySavesDirectory length] != 0)
-    {
-        [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
-        
-        NSLog(@"Trying to save SRAM");
-        
-        NSString *filePath = [batterySavesDirectory stringByAppendingPathComponent:[extensionlessFilename stringByAppendingPathExtension:@"sav"]];
-        
-        writeSaveFile([filePath UTF8String], RETRO_MEMORY_SAVE_RAM);
-    }
-    
-    NSLog(@"snes term");
-    retro_unload_game();
-    retro_deinit();
-    
-    [super stopEmulation];
+    emulator->configure("Hacks/Hotfixes", true);
+    emulator->configure("Hacks/CPU/FastMath", true);
+    emulator->configure("Hacks/PPU/Fast", true);
+    emulator->configure("Video/BlurEmulation", false);
+    program->overscan = false;
 }
 
 - (void)dealloc
 {
-    free(videoBuffer);
-}
-
-- (GLenum)pixelFormat
-{
-    return GL_BGRA;
-}
-
-- (GLenum)pixelType
-{
-    return GL_UNSIGNED_INT_8_8_8_8_REV;
-}
-
-- (GLenum)internalPixelFormat
-{
-    return GL_RGB8;
+    delete emulator;
+    delete program;
 }
 
 
-- (double)audioSampleRate
-{
-    return sampleRate ? sampleRate : 32040.5;
-}
+#pragma mark - Load / Save
 
-- (NSTimeInterval)frameInterval
-{
-    return frameInterval ? frameInterval : 60;
-}
 
-- (NSUInteger)channelCount
+- (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
-    return 2;
+    memset(pad, 0, sizeof(pad));
+    romName = [path copy];
+    
+    const char *fullPath = path.fileSystemRepresentation;
+    program->superFamicom.location = string(fullPath);
+    program->base_name = string(fullPath);
+    program->load();
+    
+    emulator->connect(SuperFamicom::ID::Port::Controller1, SuperFamicom::ID::Device::Gamepad);
+    emulator->connect(SuperFamicom::ID::Port::Controller2, SuperFamicom::ID::Device::Gamepad);
+    
+    NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
+    
+    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
+    if([batterySavesDirectory length] != 0)
+    {
+        [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
+    }
+    return YES;
 }
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
+#if 0
     int serial_size = retro_serialize_size();
     NSMutableData *stateData = [NSMutableData dataWithLength:serial_size];
     
@@ -411,10 +111,13 @@ static void writeSaveFile(const char* path, int type)
     BOOL success = [stateData writeToFile:fileName options:NSDataWritingAtomic error:&error];
     
     block(success, success ? nil : error);
+#endif
+    block(YES, nil);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
+#if 0
     __autoreleasing NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:fileName options:NSDataReadingMappedIfSafe | NSDataReadingUncached error:&error];
     
@@ -446,6 +149,147 @@ static void writeSaveFile(const char* path, int type)
     }
     
     block(YES, nil);
+#endif
+    block(YES, nil);
+}
+
+
+#pragma mark - Input
+
+
+- (oneway void)didPushSNESButton:(OESNESButton)button forPlayer:(NSUInteger)player;
+{
+    NSAssert(player > 0 && player <= 2, @"too many players");
+    pad[player-1][button] = YES;
+}
+
+- (oneway void)didReleaseSNESButton:(OESNESButton)button forPlayer:(NSUInteger)player;
+{
+    NSAssert(player > 0 && player <= 2, @"too many players");
+    pad[player-1][button] = NO;
+}
+
+- (oneway void)leftMouseDownAtPoint:(OEIntPoint)point
+{
+}
+
+- (oneway void)leftMouseUp
+{
+}
+
+- (oneway void)mouseMovedAtPoint:(OEIntPoint)point
+{
+}
+
+- (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
+{
+}
+
+- (oneway void)rightMouseUp
+{
+}
+
+
+#pragma mark - Execution
+
+
+- (void)executeFrame
+{
+    emulator->run();
+}
+
+- (void)resetEmulation
+{
+    emulator->reset();
+}
+
+- (void)stopEmulation
+{
+/*
+    NSString *path = romName;
+    NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
+    
+    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
+    
+    if([batterySavesDirectory length] != 0)
+    {
+        [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
+        
+        NSLog(@"Trying to save SRAM");
+        
+        NSString *filePath = [batterySavesDirectory stringByAppendingPathComponent:[extensionlessFilename stringByAppendingPathExtension:@"sav"]];
+        
+        writeSaveFile([filePath UTF8String], RETRO_MEMORY_SAVE_RAM);
+    }
+    
+    NSLog(@"snes term");
+    retro_unload_game();
+    retro_deinit();
+    */
+    [super stopEmulation];
+}
+
+
+#pragma mark - Video
+
+
+- (const void *)getVideoBufferWithHint:(void *)hint
+{
+    NSAssert(hint, @"no hint? bummer");
+    videoBuffer = (uint32_t *)hint;
+    return hint;
+}
+
+- (OEIntRect)screenRect
+{
+    return screenRect;
+}
+
+- (OEIntSize)bufferSize
+{
+    return OEIntSizeMake(512, 480);
+}
+
+- (OEIntSize)aspectSize
+{
+    return OEIntSizeMake(256 * (8.0/7.0), screenRect.size.height);
+}
+
+- (GLenum)pixelFormat
+{
+    return GL_BGRA;
+}
+
+- (GLenum)pixelType
+{
+    return GL_UNSIGNED_INT_8_8_8_8_REV;
+}
+
+- (GLenum)internalPixelFormat
+{
+    return GL_RGB8;
+}
+
+- (NSTimeInterval)frameInterval
+{
+    if (program->superFamicom.region == "NTSC") {
+        return 21477272.0 / 357366.0;
+    }
+    return 21281370.0 / 425568.0;
+}
+
+
+#pragma mark - Audio
+
+
+- (double)audioSampleRate
+{
+    return Emulator::audio.frequency();
+}
+
+- (NSUInteger)channelCount
+{
+    return Emulator::audio.channels();
 }
 
 

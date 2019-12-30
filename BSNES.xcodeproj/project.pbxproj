@@ -35,6 +35,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		0113624523BA377D00BC181F /* ipl.rom in Resources */ = {isa = PBXBuildFile; fileRef = 0113624323BA377D00BC181F /* ipl.rom */; };
+		0113624623BA377D00BC181F /* boards.bml in Resources */ = {isa = PBXBuildFile; fileRef = 0113624423BA377D00BC181F /* boards.bml */; };
 		0167A54323B984A300F0B36E /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A30A23B9843600F0B36E /* interface.cpp */; };
 		0167A54423B984AF00F0B36E /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A3BD23B9843600F0B36E /* system.cpp */; };
 		0167A54523B984B600F0B36E /* controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A3AE23B9843600F0B36E /* controller.cpp */; };
@@ -69,7 +71,6 @@
 		0167A56D23B985E600F0B36E /* lzma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A4E423B9843600F0B36E /* lzma.cpp */; };
 		0167A59523B985F000F0B36E /* emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A4D323B9843600F0B36E /* emulator.cpp */; };
 		0167A59C23B9861000F0B36E /* libco.c in Sources */ = {isa = PBXBuildFile; fileRef = 0167A53B23B9843700F0B36E /* libco.c */; };
-		0167A5A123B98BD000F0B36E /* libretro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A4AE23B9843600F0B36E /* libretro.cpp */; };
 		8230C69910AFBC3A00412F24 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 8230C69810AFBC3A00412F24 /* dsa_pub.pem */; };
 		8230C6AE10AFBCE500412F24 /* config.yaml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8230C6AA10AFBCC700412F24 /* config.yaml */; };
 		82B9198810150FA9007BD6DB /* bsnes.icns in Resources */ = {isa = PBXBuildFile; fileRef = 82B9198710150FA9007BD6DB /* bsnes.icns */; };
@@ -110,6 +111,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0113624123BA353400BC181F /* program.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = program.mm; sourceTree = "<group>"; };
+		0113624323BA377D00BC181F /* ipl.rom */ = {isa = PBXFileReference; lastKnownFileType = file; path = ipl.rom; sourceTree = "<group>"; };
+		0113624423BA377D00BC181F /* boards.bml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boards.bml; sourceTree = "<group>"; };
 		0167A1FB23B9843600F0B36E /* sqlite3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sqlite3.hpp; sourceTree = "<group>"; };
 		0167A1FC23B9843600F0B36E /* odbc.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = odbc.hpp; sourceTree = "<group>"; };
 		0167A1FD23B9843600F0B36E /* inline-if.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "inline-if.hpp"; sourceTree = "<group>"; };
@@ -753,10 +757,8 @@
 		826FE0F31014D8930023A8E9 /* BSNESGameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSNESGameCore.h; sourceTree = "<group>"; };
 		826FE0F41014D8930023A8E9 /* BSNESGameCore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BSNESGameCore.mm; sourceTree = "<group>"; };
 		82B9198710150FA9007BD6DB /* bsnes.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = bsnes.icns; sourceTree = "<group>"; };
-		82B91C841015267F007BD6DB /* libco.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libco.a; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* BSNES.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BSNES.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		942597C415146FF40074E3A3 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenEmuBase.framework; path = ../OpenEmu/build/Release/OpenEmuBase.framework; sourceTree = "<group>"; };
 		C6480FFB1364B2E10094FA33 /* OESNESSystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OESNESSystemResponderClient.h; path = ../OpenEmu/SuperNES/OESNESSystemResponderClient.h; sourceTree = "<group>"; };
 		C6D120EB1711307900E868A8 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEmuBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E65807B2D6F200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -775,6 +777,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0113624223BA377D00BC181F /* system */ = {
+			isa = PBXGroup;
+			children = (
+				0113624323BA377D00BC181F /* ipl.rom */,
+				0113624423BA377D00BC181F /* boards.bml */,
+			);
+			name = system;
+			path = "bsnes/bsnes/target-bsnes/resource/system";
+			sourceTree = "<group>";
+		};
 		0167A1F823B9843600F0B36E /* nall */ = {
 			isa = PBXGroup;
 			children = (
@@ -2228,6 +2240,7 @@
 		089C167CFE841241C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0113624223BA377D00BC181F /* system */,
 				8230C69810AFBC3A00412F24 /* dsa_pub.pem */,
 				82B9198710150FA9007BD6DB /* bsnes.icns */,
 				8D5B49B7048680CD000E48DA /* Info.plist */,
@@ -2240,6 +2253,7 @@
 			isa = PBXGroup;
 			children = (
 				C6480FFB1364B2E10094FA33 /* OESNESSystemResponderClient.h */,
+				0113624123BA353400BC181F /* program.mm */,
 				826FE0F31014D8930023A8E9 /* BSNESGameCore.h */,
 				826FE0F41014D8930023A8E9 /* BSNESGameCore.mm */,
 				0167A2F123B9843600F0B36E /* bsnes */,
@@ -2252,8 +2266,6 @@
 		1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				942597C415146FF40074E3A3 /* OpenEmuBase.framework */,
-				82B91C841015267F007BD6DB /* libco.a */,
 				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
 			);
 			name = "Linked Frameworks";
@@ -2339,6 +2351,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0113624623BA377D00BC181F /* boards.bml in Resources */,
+				0113624523BA377D00BC181F /* ipl.rom in Resources */,
 				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
 				82B9198810150FA9007BD6DB /* bsnes.icns in Resources */,
 				8230C69910AFBC3A00412F24 /* dsa_pub.pem in Resources */,
@@ -2389,7 +2403,6 @@
 				0167A54923B984D400F0B36E /* smp.cpp in Sources */,
 				94D9257314CA9879008F697D /* BSNESGameCore.mm in Sources */,
 				0167A56023B985A800F0B36E /* printer.c in Sources */,
-				0167A5A123B98BD000F0B36E /* libretro.cpp in Sources */,
 				0167A55323B9856C00F0B36E /* wdc65816.cpp in Sources */,
 				0167A55F23B985A800F0B36E /* sgb.c in Sources */,
 				0167A54623B984BA00F0B36E /* cartridge.cpp in Sources */,

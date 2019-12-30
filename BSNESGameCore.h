@@ -24,11 +24,16 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <Cocoa/Cocoa.h>
-#import <OpenEmuBase/OEGameCore.h>
-
-@class OERingBuffer;
+#import <OpenEmuBase/OpenEmuBase.h>
+#import "OESNESSystemResponderClient.h"
+#import <stdint.h>
 
 OE_EXPORTED_CLASS
-@interface BSNESGameCore : OEGameCore
+@interface BSNESGameCore : OEGameCore {
+@public
+    BOOL pad[2][OESNESButtonCount];
+    OEIntRect screenRect;
+    uint32_t *videoBuffer;
+}
+
 @end

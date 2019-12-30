@@ -816,8 +816,10 @@
 				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
 			);
+			indentWidth = 4;
 			name = BSNES;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -2799,6 +2801,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 089C166AFE841209C02AAC07 /* BSNES */;
@@ -2960,6 +2963,7 @@
 					"\"$(SRCROOT)/bsnes\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MARKETING_VERSION = 0.089.1;
 				OTHER_CFLAGS = "-DPROFILE_PERFORMANCE";
 				PRODUCT_NAME = BSNES;
 				SKIP_INSTALL = YES;
@@ -2983,6 +2987,7 @@
 					"\"$(SRCROOT)/bsnes\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MARKETING_VERSION = 0.089.1;
 				OTHER_CFLAGS = "-DPROFILE_PERFORMANCE";
 				PRODUCT_NAME = BSNES;
 				SKIP_INSTALL = YES;

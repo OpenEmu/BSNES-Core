@@ -35,9 +35,9 @@
 		<string>openemu.system.snes</string>
 	</array>
 	<key>SUEnableAutomaticChecks</key>
-	<string>1</string>
+	<string>0</string>
 	<key>SUFeedURL</key>
-	<string>http://openemu.org/updater/bsnes_appcast.xml</string>
+	<string></string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
 </dict>

@@ -48,28 +48,27 @@ NSString *BSNESEmulatorKeys[] = { @"Joypad@ Up", @"Joypad@ Down", @"Joypad@ Left
 
 @implementation BSNESGameCore
 
+@synthesize frameInterval;
+
 static __weak BSNESGameCore *_current;
 
 static void audio_callback(int16_t left, int16_t right)
 {
-    GET_CURRENT_AND_RETURN();
-
+    BSNESGameCore *current = _current;
 	[[current ringBufferAtIndex:0] write:&left maxLength:2];
     [[current ringBufferAtIndex:0] write:&right maxLength:2];
 }
 
 static size_t audio_batch_callback(const int16_t *data, size_t frames)
 {
-    GET_CURRENT_AND_RETURN(frames);
-
+    BSNESGameCore *current = _current;
     [[current ringBufferAtIndex:0] write:data maxLength:frames << 2];
     return frames;
 }
 
 static void video_callback(const void *data, unsigned width, unsigned height, size_t pitch)
 {
-    GET_CURRENT_AND_RETURN();
-
+    BSNESGameCore *current = _current;
     current->videoWidth  = width;
     current->videoHeight = height;
     
@@ -90,7 +89,7 @@ static void input_poll_callback(void)
 
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned _id)
 {
-    GET_CURRENT_AND_RETURN(0);
+    BSNESGameCore *current = _current;
 
 	if(port == 0 & device == RETRO_DEVICE_JOYPAD)
         return current->pad[0][_id];
@@ -190,16 +189,41 @@ static void writeSaveFile(const char* path, int type)
     pad[player-1][BSNESEmulatorValues[button]] = 0;
 }
 
+- (oneway void)leftMouseDownAtPoint:(OEIntPoint)point
+{
+}
+
+
+- (oneway void)leftMouseUp
+{
+}
+
+
+- (oneway void)mouseMovedAtPoint:(OEIntPoint)point
+{
+}
+
+
+- (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
+{
+}
+
+
+- (oneway void)rightMouseUp
+{
+}
+
+
 - (id)init
 {
     if((self = [super init]))
     {
         videoBuffer = (uint32_t *)malloc(512 * 480 * sizeof(uint32_t));
     }
-	
-	_current = self;
     
-	return self;
+    _current = self;
+    
+    return self;
 }
 
 #pragma mark Exectuion
@@ -216,7 +240,7 @@ static void writeSaveFile(const char* path, int type)
 
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
-	memset(pad, 0, sizeof(int16_t) * 24);
+    memset(pad, 0, sizeof(int16_t) * 24);
     
     uint8_t *data;
     size_t size;
@@ -224,9 +248,9 @@ static void writeSaveFile(const char* path, int type)
     
     //load cart, read bytes, get length
     NSData *dataObj = [NSData dataWithContentsOfFile:[romName stringByStandardizingPath]];
-
+    
     if(dataObj == nil) return NO;
-
+    
     size = [dataObj length];
     data = (uint8_t *)[dataObj bytes];
     const char *meta = NULL;
@@ -235,8 +259,8 @@ static void writeSaveFile(const char* path, int type)
     if((size & 0x7fff) == 512) memmove(data, data + 512, size -= 512);
     
     retro_set_environment(environment_callback);
-	retro_init();
-	
+    retro_init();
+    
     retro_set_audio_sample(audio_callback);
     retro_set_audio_sample_batch(audio_batch_callback);
     retro_set_video_refresh(video_callback);
@@ -244,7 +268,7 @@ static void writeSaveFile(const char* path, int type)
     retro_set_input_state(input_state_callback);
     
     const char *fullPath = [path UTF8String];
-
+    
     struct retro_game_info gameInfo = {NULL};
     gameInfo.path = fullPath;
     gameInfo.data = data;
@@ -278,7 +302,7 @@ static void writeSaveFile(const char* path, int type)
         retro_get_region();
         
         retro_run();
-
+        
         return YES;
     }
     
@@ -328,7 +352,7 @@ static void writeSaveFile(const char* path, int type)
     NSLog(@"snes term");
     retro_unload_game();
     retro_deinit();
-
+    
     [super stopEmulation];
 }
 
@@ -341,12 +365,12 @@ static void writeSaveFile(const char* path, int type)
 {
     return GL_BGRA;
 }
- 
+
 - (GLenum)pixelType
 {
     return GL_UNSIGNED_INT_8_8_8_8_REV;
 }
- 
+
 - (GLenum)internalPixelFormat
 {
     return GL_RGB8;
@@ -372,7 +396,7 @@ static void writeSaveFile(const char* path, int type)
 {
     int serial_size = retro_serialize_size();
     NSMutableData *stateData = [NSMutableData dataWithLength:serial_size];
-
+    
     if(!retro_serialize([stateData mutableBytes], serial_size))
     {
         NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
@@ -382,10 +406,10 @@ static void writeSaveFile(const char* path, int type)
         block(NO, error);
         return;
     }
-
+    
     __autoreleasing NSError *error = nil;
     BOOL success = [stateData writeToFile:fileName options:NSDataWritingAtomic error:&error];
-
+    
     block(success, success ? nil : error);
 }
 
@@ -393,13 +417,13 @@ static void writeSaveFile(const char* path, int type)
 {
     __autoreleasing NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:fileName options:NSDataReadingMappedIfSafe | NSDataReadingUncached error:&error];
-
+    
     if(data == nil)
     {
         block(NO, error);
         return;
     }
-
+    
     int serial_size = retro_serialize_size();
     if(serial_size != [data length])
     {
@@ -410,7 +434,7 @@ static void writeSaveFile(const char* path, int type)
         block(NO, error);
         return;
     }
-
+    
     if(!retro_unserialize([data bytes], serial_size))
     {
         NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
@@ -423,5 +447,6 @@ static void writeSaveFile(const char* path, int type)
     
     block(YES, nil);
 }
+
 
 @end

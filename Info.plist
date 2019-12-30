@@ -26,8 +26,6 @@
 	<string>BSNESGameCore</string>
 	<key>OEGameCorePlayerCount</key>
 	<string>8</string>
-	<key>OEGameCoreRequiresFiles</key>
-	<true/>
 	<key>OEProjectURL</key>
 	<string>http://byuu.org/bsnes/</string>
 	<key>OESystemIdentifiers</key>
@@ -40,5 +38,23 @@
 	<string></string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
+	<key>OEGameCoreOptions</key>
+	<dict>
+		<key>openemu.system.snes</key>
+		<dict>
+			<key>OEGameCoreRequiresFiles</key>
+			<true/>
+			<key>OEGameCoreRewindBufferSeconds</key>
+			<integer>120</integer>
+			<key>OEGameCoreRewindInterval</key>
+			<integer>1</integer>
+			<key>OEGameCoreSupportsCheatCode</key>
+			<false/>
+			<key>OEGameCoreSupportsRewinding</key>
+			<true/>
+			<key>OERequiredFiles</key>
+			<array/>
+		</dict>
+	</dict>
 </dict>
 </plist>

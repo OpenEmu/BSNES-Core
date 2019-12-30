@@ -39,7 +39,6 @@
     NSString *romName;
 }
 
-
 - (id)init
 {
     self = [super init];
@@ -48,6 +47,16 @@
     [self configEmulator];
     return self;
 }
+
+- (void)dealloc
+{
+    delete emulator;
+    delete program;
+}
+
+
+#pragma mark - Configuration
+
 
 - (void)configEmulator
 {
@@ -58,10 +67,9 @@
     program->overscan = false;
 }
 
-- (void)dealloc
+- (BOOL)supportsRewinding
 {
-    delete emulator;
-    delete program;
+    return YES;
 }
 
 
@@ -91,66 +99,43 @@
     return YES;
 }
 
+- (NSData *)serializeStateWithError:(NSError *__autoreleasing *)outError
+{
+    serializer s = emulator->serialize();
+    return [NSData dataWithBytes:s.data() length:s.size()];
+}
+
+- (BOOL)deserializeState:(NSData *)state withError:(NSError *__autoreleasing *)outError
+{
+    serializer s(static_cast<const uint8_t *>(state.bytes), state.length);
+    BOOL res = emulator->unserialize(s);
+    if (!res && outError)
+        *outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
+    return res;
+}
+
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-#if 0
-    int serial_size = retro_serialize_size();
-    NSMutableData *stateData = [NSMutableData dataWithLength:serial_size];
-    
-    if(!retro_serialize([stateData mutableBytes], serial_size))
-    {
-        NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
-            NSLocalizedDescriptionKey : @"Save state data could not be written",
-            NSLocalizedRecoverySuggestionErrorKey : @"The emulator could not write the state data."
-        }];
-        block(NO, error);
-        return;
-    }
+    NSData *stateData = [self serializeStateWithError:nil];
     
     __autoreleasing NSError *error = nil;
     BOOL success = [stateData writeToFile:fileName options:NSDataWritingAtomic error:&error];
     
     block(success, success ? nil : error);
-#endif
-    block(YES, nil);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-#if 0
     __autoreleasing NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:fileName options:NSDataReadingMappedIfSafe | NSDataReadingUncached error:&error];
     
-    if(data == nil)
-    {
+    if(data == nil) {
         block(NO, error);
         return;
     }
     
-    int serial_size = retro_serialize_size();
-    if(serial_size != [data length])
-    {
-        NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreStateHasWrongSizeError userInfo:@{
-            NSLocalizedDescriptionKey : @"Save state has wrong file size.",
-            NSLocalizedRecoverySuggestionErrorKey : [NSString stringWithFormat:@"The size of the file %@ does not have the right size, %d expected, got: %ld.", fileName, serial_size, [data length]],
-        }];
-        block(NO, error);
-        return;
-    }
-    
-    if(!retro_unserialize([data bytes], serial_size))
-    {
-        NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
-            NSLocalizedDescriptionKey : @"The save state data could not be read",
-            NSLocalizedRecoverySuggestionErrorKey : [NSString stringWithFormat:@"Could not read the file state in %@.", fileName]
-        }];
-        block(NO, error);
-        return;
-    }
-    
-    block(YES, nil);
-#endif
-    block(YES, nil);
+    BOOL success = [self deserializeState:data withError:&error];
+    block(success, success ? nil : error);
 }
 
 
@@ -205,27 +190,7 @@
 
 - (void)stopEmulation
 {
-/*
-    NSString *path = romName;
-    NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
-    
-    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-    
-    if([batterySavesDirectory length] != 0)
-    {
-        [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
-        
-        NSLog(@"Trying to save SRAM");
-        
-        NSString *filePath = [batterySavesDirectory stringByAppendingPathComponent:[extensionlessFilename stringByAppendingPathExtension:@"sav"]];
-        
-        writeSaveFile([filePath UTF8String], RETRO_MEMORY_SAVE_RAM);
-    }
-    
-    NSLog(@"snes term");
-    retro_unload_game();
-    retro_deinit();
-    */
+    program->save();
     [super stopEmulation];
 }
 

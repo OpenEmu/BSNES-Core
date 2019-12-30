@@ -98,7 +98,7 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
         return vfs::fs::file::open(url.fileSystemRepresentation, mode);
     }
 
-    if (id == 1) { //Super Famicom
+    if (id == ::SuperFamicom::ID::SuperFamicom) { //Super Famicom
         if (name == "manifest.bml" && mode == vfs::file::mode::read) {
             result = vfs::memory::file::open(superFamicom.manifest.data<uint8_t>(), superFamicom.manifest.size());
         } else if (name == "program.rom" && mode == vfs::file::mode::read) {
@@ -111,7 +111,7 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
             result = openRomSuperFamicom(name, mode);
         }
     }
-    else if (id == 2) { //Game Boy
+    else if (id == ::SuperFamicom::ID::GameBoy) { //Game Boy
         if (name == "manifest.bml" && mode == vfs::file::mode::read) {
             result = vfs::memory::file::open(gameBoy.manifest.data<uint8_t>(), gameBoy.manifest.size());
         } else if (name == "program.rom" && mode == vfs::file::mode::read) {
@@ -123,7 +123,8 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
     return result;
 }
 
-auto Program::load() -> void {
+auto Program::load() -> void
+{
     emulator->unload();
     emulator->load();
 
@@ -164,14 +165,14 @@ auto Program::load() -> void {
 
 auto Program::load(uint id, string name, string type, vector<string> options) -> Emulator::Platform::Load
 {
-    if (id == 1)
+    if (id == ::SuperFamicom::ID::SuperFamicom)
     {
         if (loadSuperFamicom(superFamicom.location))
         {
             return {id, superFamicom.region};
         }
     }
-    else if (id == 2)
+    else if (id == ::SuperFamicom::ID::GameBoy)
     {
         if (loadGameBoy(gameBoy.location))
         {

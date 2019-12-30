@@ -35,9 +35,8 @@
 #include "program.mm"
 
 
-@implementation BSNESGameCore {
-    NSString *romName;
-}
+@implementation BSNESGameCore
+
 
 - (id)init
 {
@@ -79,7 +78,6 @@
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     memset(pad, 0, sizeof(pad));
-    romName = [path copy];
     
     const char *fullPath = path.fileSystemRepresentation;
     program->superFamicom.location = string(fullPath);
@@ -89,13 +87,10 @@
     emulator->connect(SuperFamicom::ID::Port::Controller1, SuperFamicom::ID::Device::Gamepad);
     emulator->connect(SuperFamicom::ID::Port::Controller2, SuperFamicom::ID::Device::Gamepad);
     
-    NSString *extensionlessFilename = [[path lastPathComponent] stringByDeletingPathExtension];
-    
     NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-    if([batterySavesDirectory length] != 0)
-    {
-        [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
-    }
+    NSAssert(batterySavesDirectory.length > 0, @"no battery save directory!?");
+    [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
+    
     return YES;
 }
 

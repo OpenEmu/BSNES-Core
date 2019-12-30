@@ -212,7 +212,12 @@
 
 - (OEIntSize)aspectSize
 {
-    return OEIntSizeMake(256 * (8.0/7.0), screenRect.size.height);
+    if (!(program->overscan)) {
+        /* Overscan hiding removes the top and bottom 8 pixels.
+         * This fraction is equivalent to (256 * 8 / 7) / 224 */
+        return OEIntSizeMake(64, 49);
+    }
+    return OEIntSizeMake(8, 7);
 }
 
 - (GLenum)pixelFormat

@@ -35,6 +35,19 @@
 #include "program.mm"
 
 
+/*
+ * TODO
+ *  - BIOS list + BIOS loading when available + load error if required BIOS not found
+ *  - Multitap support
+ *  - Mouse support
+ *  - Cheats
+ *  - Additional display modes (BlurEmulation / ColorEmulation / overscan removal)
+ *    The list of all possible options can be found in bsnes/sfc/interface/configuration.cpp
+ *  - Add support for 64 bit pixel formats to the Metal renderer in OpenEmu and remove
+ *    the 64 bit -> 32 bit pixel format conversion in Program::videoFrame()
+ */
+
+
 @implementation BSNESGameCore
 
 
@@ -60,7 +73,6 @@
 - (void)configEmulator
 {
     emulator->configure("Hacks/Hotfixes", true);
-    emulator->configure("Hacks/CPU/FastMath", true);
     emulator->configure("Hacks/PPU/Fast", true);
     emulator->configure("Video/BlurEmulation", false);
     program->overscan = false;

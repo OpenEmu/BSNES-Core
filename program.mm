@@ -16,9 +16,13 @@ using namespace nall;
 #include <heuristics/super-famicom.cpp>
 #include <heuristics/game-boy.cpp>
 
+/* This file is mostly lifted from bsnes/target-libretro/program.cpp
+ *   It is a good idea to keep the common parts of this file in sync with its
+ * target-libretro counterpart when the bsnes core gets updated. */
+
 struct Program : Emulator::Platform {
     Program(BSNESGameCore *oeCore);
-    ~Program();
+    ~Program() {};
     
     auto open(uint id, string name, vfs::file::mode mode, bool required) -> shared_pointer<vfs::file> override;
     auto load(uint id, string name, string type, vector<string> options = {}) -> Emulator::Platform::Load override;
@@ -69,17 +73,19 @@ public:
     } gameBoy;
 };
 
+/* The actual SFC emulator object. Communicates to the front-end (an instance
+ * of Emulator::Platform) through the Emulator::platform global variable.
+ * Owned by BSNESGameCore */
 static Emulator::Interface *emulator;
+
+/* The current instance of Emulator::Platform
+ * Owned by BSNESGameCore */
 static Program *program = nullptr;
 
 Program::Program(BSNESGameCore *oeCore) : oeCore(oeCore)
 {
+    // tell the emulator that all event callbacks should be invoked on this object
     Emulator::platform = this;
-}
-
-Program::~Program()
-{
-    delete emulator;
 }
 
 auto Program::save() -> void

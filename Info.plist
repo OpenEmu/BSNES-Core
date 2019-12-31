@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>bsnes</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.openemu.${PRODUCT_NAME:identifier}</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -24,20 +24,6 @@
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
 	<string>BSNESGameCore</string>
-	<key>OEGameCorePlayerCount</key>
-	<string>8</string>
-	<key>OEProjectURL</key>
-	<string>http://byuu.org/bsnes/</string>
-	<key>OESystemIdentifiers</key>
-	<array>
-		<string>openemu.system.snes</string>
-	</array>
-	<key>SUEnableAutomaticChecks</key>
-	<string>0</string>
-	<key>SUFeedURL</key>
-	<string></string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>dsa_pub.pem</string>
 	<key>OEGameCoreOptions</key>
 	<dict>
 		<key>openemu.system.snes</key>
@@ -56,5 +42,19 @@
 			<array/>
 		</dict>
 	</dict>
+	<key>OEGameCorePlayerCount</key>
+	<string>8</string>
+	<key>OEProjectURL</key>
+	<string>http://byuu.org/bsnes/</string>
+	<key>OESystemIdentifiers</key>
+	<array>
+		<string>openemu.system.snes</string>
+	</array>
+	<key>SUEnableAutomaticChecks</key>
+	<string>0</string>
+	<key>SUFeedURL</key>
+	<string></string>
+	<key>SUPublicDSAKeyFile</key>
+	<string>dsa_pub.pem</string>
 </dict>
 </plist>

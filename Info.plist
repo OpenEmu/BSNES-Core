@@ -35,7 +35,7 @@
 			<key>OEGameCoreRewindInterval</key>
 			<integer>1</integer>
 			<key>OEGameCoreSupportsCheatCode</key>
-			<false/>
+			<true/>
 			<key>OEGameCoreSupportsRewinding</key>
 			<true/>
 			<key>OERequiredFiles</key>

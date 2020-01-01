@@ -7,10 +7,27 @@ using namespace nall;
 #include <heuristics/super-famicom.cpp>
 
 /* This file is mostly lifted from bsnes/target-libretro/program.cpp, which
- * in turn was mostly lifted from bsnes/target-bsnes/program/program.cpp and
- * its plethora of includes.
- *   It is a good idea to keep the common parts of this file in sync with its
- * target-libretro and target-bsnes counterparts when the core gets updated. */
+* in turn was mostly lifted from bsnes/target-bsnes/program/program.cpp and
+* its plethora of includes.
+*   It is a good idea to keep the common parts of this file in sync with its
+* target-libretro and target-bsnes counterparts when the core gets updated. */
+
+
+#pragma mark - Globals
+
+
+/* The actual SFC emulator object. Communicates to the front-end (an instance
+ * of Emulator::Platform) through the Emulator::platform global variable.
+ * Owned by BSNESGameCore */
+static Emulator::Interface *emulator;
+
+/* The current instance of Emulator::Platform
+ * Owned by BSNESGameCore */
+struct Program;
+static Program *program = nullptr;
+
+
+#pragma mark - Platform Object
 
 struct Program : Emulator::Platform {
     Program(BSNESGameCore *oeCore);
@@ -62,15 +79,6 @@ public:
         vector<uint8_t> firmware;
     } superFamicom;
 };
-
-/* The actual SFC emulator object. Communicates to the front-end (an instance
- * of Emulator::Platform) through the Emulator::platform global variable.
- * Owned by BSNESGameCore */
-static Emulator::Interface *emulator;
-
-/* The current instance of Emulator::Platform
- * Owned by BSNESGameCore */
-static Program *program = nullptr;
 
 Program::Program(BSNESGameCore *oeCore) : oeCore(oeCore)
 {
@@ -419,4 +427,93 @@ auto Program::hackPatchMemory(vector<uint8_t>& data) -> void
         if(data[0x4ded] == 0x10) data[0x4ded] = 0x80;
         if(data[0x4e9a] == 0x10) data[0x4e9a] = 0x80;
     }
+}
+
+
+#pragma mark - Utility Functions
+
+
+// The following function is copy-pasted from
+// bsnes/target-bsnes/cheat-editor.cpp
+// (its original name was CheatEditor::decodeSNES)
+
+auto OEBSNESCheatDecodeSNES(string& code) -> bool
+{
+  //Game Genie
+  if(code.size() == 9 && code[4] == '-') {
+    //strip '-'
+    code = {code.slice(0, 4), code.slice(5, 4)};
+    //validate
+    for(uint n : code) {
+      if(n >= '0' && n <= '9') continue;
+      if(n >= 'a' && n <= 'f') continue;
+      return false;
+    }
+    //decode
+    code.transform("df4709156bc8a23e", "0123456789abcdef");
+    uint32_t r = toHex(code);
+    //abcd efgh ijkl mnop qrst uvwx
+    //ijkl qrst opab cduv wxef ghmn
+    uint address =
+      (!!(r & 0x002000) << 23) | (!!(r & 0x001000) << 22)
+    | (!!(r & 0x000800) << 21) | (!!(r & 0x000400) << 20)
+    | (!!(r & 0x000020) << 19) | (!!(r & 0x000010) << 18)
+    | (!!(r & 0x000008) << 17) | (!!(r & 0x000004) << 16)
+    | (!!(r & 0x800000) << 15) | (!!(r & 0x400000) << 14)
+    | (!!(r & 0x200000) << 13) | (!!(r & 0x100000) << 12)
+    | (!!(r & 0x000002) << 11) | (!!(r & 0x000001) << 10)
+    | (!!(r & 0x008000) <<  9) | (!!(r & 0x004000) <<  8)
+    | (!!(r & 0x080000) <<  7) | (!!(r & 0x040000) <<  6)
+    | (!!(r & 0x020000) <<  5) | (!!(r & 0x010000) <<  4)
+    | (!!(r & 0x000200) <<  3) | (!!(r & 0x000100) <<  2)
+    | (!!(r & 0x000080) <<  1) | (!!(r & 0x000040) <<  0);
+    uint data = r >> 24;
+    code = {hex(address, 6L), "=", hex(data, 2L)};
+    return true;
+  }
+
+  //Pro Action Replay
+  if(code.size() == 8) {
+    //validate
+    for(uint n : code) {
+      if(n >= '0' && n <= '9') continue;
+      if(n >= 'a' && n <= 'f') continue;
+      return false;
+    }
+    //decode
+    uint32_t r = toHex(code);
+    uint address = r >> 8;
+    uint data = r & 0xff;
+    code = {hex(address, 6L), "=", hex(data, 2L)};
+    return true;
+  }
+
+  //higan: address=data
+  if(code.size() == 9 && code[6] == '=') {
+    string nibbles = {code.slice(0, 6), code.slice(7, 2)};
+    //validate
+    for(uint n : nibbles) {
+      if(n >= '0' && n <= '9') continue;
+      if(n >= 'a' && n <= 'f') continue;
+      return false;
+    }
+    //already in decoded form
+    return true;
+  }
+
+  //higan: address=compare?data
+  if(code.size() == 12 && code[6] == '=' && code[9] == '?') {
+    string nibbles = {code.slice(0, 6), code.slice(7, 2), code.slice(10, 2)};
+    //validate
+    for(uint n : nibbles) {
+      if(n >= '0' && n <= '9') continue;
+      if(n >= 'a' && n <= 'f') continue;
+      return false;
+    }
+    //already in decoded form
+    return true;
+  }
+
+  //unrecognized code format
+  return false;
 }

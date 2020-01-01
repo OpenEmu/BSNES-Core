@@ -39,7 +39,6 @@
  * TODO
  *  - Multitap support
  *  - Mouse support
- *  - Cheats
  *  - Additional display modes (BlurEmulation / ColorEmulation / overscan removal)
  *    The list of all possible options can be found in bsnes/sfc/interface/configuration.cpp
  *  - Add support for 64 bit pixel formats to the Metal renderer in OpenEmu and remove
@@ -47,7 +46,9 @@
  */
 
 
-@implementation BSNESGameCore
+@implementation BSNESGameCore {
+    NSMutableSet <NSString *> *_activeCheats;
+}
 
 
 - (id)init
@@ -55,6 +56,7 @@
     self = [super init];
     emulator = new SuperFamicom::Interface;
     program = new Program(self);
+    _activeCheats = [[NSMutableSet alloc] init];
     return self;
 }
 
@@ -65,7 +67,7 @@
 }
 
 
-#pragma mark - Configuration
+#pragma mark - Configuration & Cheats
 
 
 - (void)configEmulator
@@ -74,6 +76,33 @@
     emulator->configure("Hacks/PPU/Fast", true);
     emulator->configure("Video/BlurEmulation", false);
     program->overscan = false;
+}
+
+- (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
+{
+    if ([type isEqual:@"Action Replay"])
+        code = [code stringByReplacingOccurrencesOfString:@":" withString:@""];
+    NSArray <NSString *> *codes = [code componentsSeparatedByString:@"+"];
+    if (enabled)
+        [_activeCheats addObjectsFromArray:codes];
+    else
+        [_activeCheats minusSet:[NSSet setWithArray:codes]];
+    [self loadCheats];
+}
+
+- (void)loadCheats
+{
+    vector<string> newCheatList;
+    for (NSString *cheat in _activeCheats) {
+        string decodedCheat = string(cheat.UTF8String).downcase();
+        if (OEBSNESCheatDecodeSNES(decodedCheat)) {
+            NSLog(@"Successfully decoded cheat %@ to %s", cheat, decodedCheat.begin());
+            newCheatList.append(decodedCheat);
+        } else {
+            NSLog(@"Could not decode cheat %@", cheat);
+        }
+    }
+    emulator->cheats(newCheatList);
 }
 
 
@@ -111,6 +140,7 @@
     
     emulator->connect(SuperFamicom::ID::Port::Controller1, SuperFamicom::ID::Device::Gamepad);
     emulator->connect(SuperFamicom::ID::Port::Controller2, SuperFamicom::ID::Device::Gamepad);
+    [self loadCheats];
     
     NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
     NSAssert(batterySavesDirectory.length > 0, @"no battery save directory!?");

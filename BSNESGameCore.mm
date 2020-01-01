@@ -77,11 +77,6 @@
     program->overscan = false;
 }
 
-- (BOOL)supportsRewinding
-{
-    return YES;
-}
-
 
 #pragma mark - Load / Save
 

@@ -19,7 +19,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.089</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSPrincipalClass</key>
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
@@ -80,7 +80,7 @@
 		</dict>
 	</dict>
 	<key>OEGameCorePlayerCount</key>
-	<string>8</string>
+	<string>2</string>
 	<key>OEProjectURL</key>
 	<string>http://byuu.org/bsnes/</string>
 	<key>OESystemIdentifiers</key>

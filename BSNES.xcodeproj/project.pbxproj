@@ -116,6 +116,7 @@
 		0113624323BA377D00BC181F /* ipl.rom */ = {isa = PBXFileReference; lastKnownFileType = file; path = ipl.rom; sourceTree = "<group>"; };
 		0113624423BA377D00BC181F /* boards.bml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boards.bml; sourceTree = "<group>"; };
 		013D75C623BCEF0100D74AD3 /* Super Famicom.bml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Super Famicom.bml"; sourceTree = "<group>"; };
+		013D75CB23BD147A00D74AD3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0167A1FB23B9843600F0B36E /* sqlite3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sqlite3.hpp; sourceTree = "<group>"; };
 		0167A1FC23B9843600F0B36E /* odbc.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = odbc.hpp; sourceTree = "<group>"; };
 		0167A1FD23B9843600F0B36E /* inline-if.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "inline-if.hpp"; sourceTree = "<group>"; };
@@ -751,7 +752,6 @@
 		0167A53F23B9843700F0B36E /* targets.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = targets.html; sourceTree = "<group>"; };
 		0167A54023B9843700F0B36E /* usage.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = usage.html; sourceTree = "<group>"; };
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		089C167FFE841241C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8230C69810AFBC3A00412F24 /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
@@ -2341,11 +2341,11 @@
 			};
 			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "BSNES" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
 				en,
+				Base,
 			);
 			mainGroup = 089C166AFE841209C02AAC07 /* BSNES */;
 			projectDirPath = "";
@@ -2465,7 +2465,7 @@
 		089C167DFE841241C02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C167EFE841241C02AAC07 /* English */,
+				013D75CB23BD147A00D74AD3 /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -2479,18 +2479,16 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 113.4;
+				GCC_OPTIMIZATION_LEVEL = 1;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)/bsnes\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "\"$(USER_LIBRARY_DIR)/Application Support/OpenEmu/Cores\"";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/bsnes\"",
-				);
-				MARKETING_VERSION = 0.089.1;
+				MARKETING_VERSION = 113.4;
 				OTHER_CFLAGS = (
-					"-DPROFILE_PERFORMANCE",
 					"-DGB_INTERNAL",
 					"-DDISABLE_DEBUGGER",
 				);
@@ -2509,18 +2507,15 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 113.4;
+				GCC_OPTIMIZATION_LEVEL = fast;
+				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)/bsnes\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "\"$(USER_LIBRARY_DIR)/Application Support/OpenEmu/Cores\"";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/bsnes\"",
-				);
-				MARKETING_VERSION = 0.089.1;
+				MARKETING_VERSION = 113.4;
 				OTHER_CFLAGS = (
-					"-DPROFILE_PERFORMANCE",
 					"-DGB_INTERNAL",
 					"-DDISABLE_DEBUGGER",
 				);
@@ -2565,11 +2560,7 @@
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					PROFILE_PERFORMANCE,
-					"DEBUG=1",
-					"$(inherited)",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -2617,7 +2608,6 @@
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = PROFILE_PERFORMANCE;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

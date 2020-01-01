@@ -435,6 +435,7 @@ auto Program::loadFile(string location) -> vector<uint8_t>
 
 auto Program::loadSuperFamicom(string location) -> bool
 {
+    string manifest;
     vector<uint8_t> rom;
     rom = loadFile(location);
 
@@ -450,11 +451,21 @@ auto Program::loadSuperFamicom(string location) -> bool
 
     auto heuristics = Heuristics::SuperFamicom(rom, location);
     auto sha256 = Hash::SHA256(rom).digest();
-
     superFamicom.title = heuristics.title();
     superFamicom.region = heuristics.videoRegion();
-    superFamicom.manifest = heuristics.manifest();
-
+    NSURL *dburl = [[NSBundle bundleForClass:[oeCore class]] URLForResource:@"Super Famicom" withExtension:@"bml"];
+    if(auto document = BML::unserialize(string::read(dburl.fileSystemRepresentation))) {
+      if(auto game = document[{"game(sha256=", sha256, ")"}]) {
+        manifest = BML::serialize(game);
+        //the internal ROM header title is not present in the database, but is needed for internal core overrides
+        manifest.append("  title: ", superFamicom.title, "\n");
+        superFamicom.verified = true;
+        NSLog(@"The game being loaded (sha256=%s, title=%s) is VERIFIED", sha256.begin(), superFamicom.title.begin());
+      } else {
+        NSLog(@"The game being loaded (sha256=%s, title=%s) is NOT VERIFIED", sha256.begin(), superFamicom.title.begin());
+      }
+    }
+    superFamicom.manifest = manifest ? manifest : heuristics.manifest();
     hackPatchMemory(rom);
     superFamicom.document = BML::unserialize(superFamicom.manifest);
     superFamicom.location = location;

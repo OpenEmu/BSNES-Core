@@ -37,6 +37,7 @@
 /* Begin PBXBuildFile section */
 		0113624523BA377D00BC181F /* ipl.rom in Resources */ = {isa = PBXBuildFile; fileRef = 0113624323BA377D00BC181F /* ipl.rom */; };
 		0113624623BA377D00BC181F /* boards.bml in Resources */ = {isa = PBXBuildFile; fileRef = 0113624423BA377D00BC181F /* boards.bml */; };
+		013D75CA23BCEF0100D74AD3 /* Super Famicom.bml in Resources */ = {isa = PBXBuildFile; fileRef = 013D75C623BCEF0100D74AD3 /* Super Famicom.bml */; };
 		0167A54323B984A300F0B36E /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A30A23B9843600F0B36E /* interface.cpp */; };
 		0167A54423B984AF00F0B36E /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A3BD23B9843600F0B36E /* system.cpp */; };
 		0167A54523B984B600F0B36E /* controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A3AE23B9843600F0B36E /* controller.cpp */; };
@@ -114,6 +115,7 @@
 		0113624123BA353400BC181F /* program.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = program.mm; sourceTree = "<group>"; };
 		0113624323BA377D00BC181F /* ipl.rom */ = {isa = PBXFileReference; lastKnownFileType = file; path = ipl.rom; sourceTree = "<group>"; };
 		0113624423BA377D00BC181F /* boards.bml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boards.bml; sourceTree = "<group>"; };
+		013D75C623BCEF0100D74AD3 /* Super Famicom.bml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Super Famicom.bml"; sourceTree = "<group>"; };
 		0167A1FB23B9843600F0B36E /* sqlite3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sqlite3.hpp; sourceTree = "<group>"; };
 		0167A1FC23B9843600F0B36E /* odbc.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = odbc.hpp; sourceTree = "<group>"; };
 		0167A1FD23B9843600F0B36E /* inline-if.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "inline-if.hpp"; sourceTree = "<group>"; };
@@ -785,6 +787,15 @@
 			);
 			name = system;
 			path = "bsnes/bsnes/target-bsnes/resource/system";
+			sourceTree = "<group>";
+		};
+		013D75C223BCEF0100D74AD3 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				013D75C623BCEF0100D74AD3 /* Super Famicom.bml */,
+			);
+			name = Database;
+			path = bsnes/bsnes/Database;
 			sourceTree = "<group>";
 		};
 		0167A1F823B9843600F0B36E /* nall */ = {
@@ -2240,6 +2251,7 @@
 		089C167CFE841241C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				013D75C223BCEF0100D74AD3 /* Database */,
 				0113624223BA377D00BC181F /* system */,
 				8230C69810AFBC3A00412F24 /* dsa_pub.pem */,
 				82B9198710150FA9007BD6DB /* bsnes.icns */,
@@ -2355,6 +2367,7 @@
 				0113624523BA377D00BC181F /* ipl.rom in Resources */,
 				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
 				82B9198810150FA9007BD6DB /* bsnes.icns in Resources */,
+				013D75CA23BCEF0100D74AD3 /* Super Famicom.bml in Resources */,
 				8230C69910AFBC3A00412F24 /* dsa_pub.pem in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

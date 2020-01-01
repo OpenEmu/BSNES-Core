@@ -31,6 +31,7 @@
 OE_EXPORTED_CLASS
 @interface BSNESGameCore : OEGameCore {
 @public
+    /* these ivars are accessed by the emulator interface object Program */
     BOOL pad[2][OESNESButtonCount];
     OEIntRect screenRect;
     uint32_t *videoBuffer;

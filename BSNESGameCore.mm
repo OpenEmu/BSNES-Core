@@ -39,8 +39,6 @@
  * TODO
  *  - Multitap support
  *  - Mouse support
- *  - Additional display modes (BlurEmulation / ColorEmulation / overscan removal)
- *    The list of all possible options can be found in bsnes/sfc/interface/configuration.cpp
  *  - Add support for 64 bit pixel formats to the Metal renderer in OpenEmu and remove
  *    the 64 bit -> 32 bit pixel format conversion in Program::videoFrame()
  */
@@ -48,8 +46,8 @@
 
 @implementation BSNESGameCore {
     NSMutableSet <NSString *> *_activeCheats;
+    NSMutableDictionary <NSString *, NSNumber *> *_displayModes;
 }
-
 
 - (id)init
 {
@@ -57,6 +55,7 @@
     emulator = new SuperFamicom::Interface;
     program = new Program(self);
     _activeCheats = [[NSMutableSet alloc] init];
+    _displayModes = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -70,12 +69,56 @@
 #pragma mark - Configuration & Cheats
 
 
+- (void)setDisplayModeInfo:(NSDictionary<NSString *,id> *)displayModeInfo
+{
+    _displayModes = [@{
+        @"bsnes/Video/BlurEmulation": @NO,
+        @"bsnes/Video/ColorEmulation": @YES,
+        @"bsnes/Hacks/PPU/NoSpriteLimit": @NO,
+        @"hide_overscan": @YES
+    } mutableCopy];
+    [_displayModes addEntriesFromDictionary:displayModeInfo];
+}
+
+- (NSDictionary<NSString *,id> *)displayModeInfo
+{
+    return [_displayModes copy];
+}
+
+- (NSArray<NSDictionary<NSString *,id> *> *)displayModes
+{
+    return @[
+        OEDisplayMode_OptionToggleableWithState(@"Blur Emulation",
+            @"bsnes/Video/BlurEmulation", _displayModes[@"bsnes/Video/BlurEmulation"]),
+        OEDisplayMode_OptionToggleableWithState(@"Color Emulation",
+            @"bsnes/Video/ColorEmulation", _displayModes[@"bsnes/Video/ColorEmulation"]),
+        OEDisplayMode_OptionToggleableWithState(@"Hide Overscan",
+            @"hide_overscan", _displayModes[@"hide_overscan"]),
+        OEDisplayMode_SeparatorItem(),
+        OEDisplayMode_OptionToggleableWithState(@"Disable Sprite Limit (requires reset)",
+            @"bsnes/Hacks/PPU/NoSpriteLimit", _displayModes[@"bsnes/Hacks/PPU/NoSpriteLimit"]),
+    ];
+}
+
+- (void)changeDisplayWithMode:(NSString *)displayMode
+{
+    NSString *key = OEDisplayModeListGetPrefKeyFromModeName(self.displayModes, displayMode);
+    NSNumber *currentVal = _displayModes[key];
+    _displayModes[key] = @(!(currentVal.boolValue));
+    [self configEmulator];
+}
+
 - (void)configEmulator
 {
     emulator->configure("Hacks/Hotfixes", true);
     emulator->configure("Hacks/PPU/Fast", true);
-    emulator->configure("Video/BlurEmulation", false);
-    program->overscan = false;
+    [_displayModes enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop) {
+        if ([key hasPrefix:@"bsnes/"]) {
+            NSString *keyNoPrefix = [key substringFromIndex:@"bsnes/".length];
+            emulator->configure(keyNoPrefix.UTF8String, (bool)(obj.boolValue));
+        }
+    }];
+    program->overscan = !(_displayModes[@"hide_overscan"].boolValue);
 }
 
 - (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled

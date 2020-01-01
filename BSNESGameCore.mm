@@ -55,7 +55,6 @@
     self = [super init];
     emulator = new SuperFamicom::Interface;
     program = new Program(self);
-    [self configEmulator];
     return self;
 }
 
@@ -84,6 +83,7 @@
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     memset(pad, 0, sizeof(pad));
+    [self configEmulator];
     
     const char *fullPath = path.fileSystemRepresentation;
     program->superFamicom.location = string(fullPath);

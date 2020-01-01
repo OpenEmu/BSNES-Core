@@ -1,24 +1,16 @@
 #include <emulator/emulator.hpp>
 #include <sfc/interface/interface.hpp>
-#include <filter/filter.hpp>
-#include <lzma/lzma.hpp>
-#include <nall/directory.hpp>
-#include <nall/instance.hpp>
-#include <nall/decode/rle.hpp>
-#include <nall/decode/zip.hpp>
-#include <nall/encode/rle.hpp>
-#include <nall/encode/zip.hpp>
-#include <nall/hash/crc16.hpp>
 using namespace nall;
 
 #include <heuristics/heuristics.hpp>
 #include <heuristics/heuristics.cpp>
 #include <heuristics/super-famicom.cpp>
-#include <heuristics/game-boy.cpp>
 
-/* This file is mostly lifted from bsnes/target-libretro/program.cpp
+/* This file is mostly lifted from bsnes/target-libretro/program.cpp, which
+ * in turn was mostly lifted from bsnes/target-bsnes/program/program.cpp and
+ * its plethora of includes.
  *   It is a good idea to keep the common parts of this file in sync with its
- * target-libretro counterpart when the bsnes core gets updated. */
+ * target-libretro and target-bsnes counterparts when the core gets updated. */
 
 struct Program : Emulator::Platform {
     Program(BSNESGameCore *oeCore);
@@ -34,13 +26,11 @@ struct Program : Emulator::Platform {
     auto load() -> void;
     auto loadFile(string location) -> vector<uint8_t>;
     auto loadSuperFamicom(string location) -> bool;
-    auto loadGameBoy(string location) -> bool;
 
     auto save() -> void;
 
     auto openRomSuperFamicom(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>;
     auto loadSuperFamicomFirmware(string fwname) -> void;
-    auto openRomGameBoy(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>;
     
     auto hackPatchMemory(vector<uint8_t>& data) -> void;
     
@@ -71,10 +61,6 @@ public:
         vector<uint8_t> expansion;
         vector<uint8_t> firmware;
     } superFamicom;
-
-    struct GameBoy : Game {
-        vector<uint8_t> program;
-    } gameBoy;
 };
 
 /* The actual SFC emulator object. Communicates to the front-end (an instance
@@ -119,15 +105,6 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
             result = vfs::memory::file::open(superFamicom.expansion.data(), superFamicom.expansion.size());
         } else {
             result = openRomSuperFamicom(name, mode);
-        }
-    }
-    else if (id == ::SuperFamicom::ID::GameBoy) { //Game Boy
-        if (name == "manifest.bml" && mode == vfs::file::mode::read) {
-            result = vfs::memory::file::open(gameBoy.manifest.data<uint8_t>(), gameBoy.manifest.size());
-        } else if (name == "program.rom" && mode == vfs::file::mode::read) {
-            result = vfs::memory::file::open(gameBoy.program.data(), gameBoy.program.size());
-        } else {
-            result = openRomGameBoy(name, mode);
         }
     }
     
@@ -189,13 +166,6 @@ auto Program::load(uint id, string name, string type, vector<string> options) ->
         if (loadSuperFamicom(superFamicom.location))
         {
             return {id, superFamicom.region};
-        }
-    }
-    else if (id == ::SuperFamicom::ID::GameBoy)
-    {
-        if (loadGameBoy(gameBoy.location))
-        {
-            return { id, NULL };
         }
     }
     return { id, options(0) };
@@ -369,68 +339,9 @@ auto Program::loadSuperFamicomFirmware(string fwname) -> void
         lastFailedBiosLoad = biosfn;
 }
 
-auto Program::openRomGameBoy(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>
-{
-    if(name == "program.rom" && mode == vfs::file::mode::read)
-    {
-        return vfs::memory::file::open(gameBoy.program.data(), gameBoy.program.size());
-    }
-
-    if(name == "save.ram")
-    {
-        string save_path;
-
-        auto suffix = Location::suffix(base_name);
-        auto base = Location::base(base_name.transform("\\", "/"));
-
-        const char *save = oeCore.batterySavesDirectoryPath.fileSystemRepresentation;
-        if (save)
-            save_path = { string(save).transform("\\", "/"), "/", base.trimRight(suffix, 1L), ".srm" };
-        else
-            save_path = { base_name.trimRight(suffix, 1L), ".srm" };
-
-        return vfs::fs::file::open(save_path, mode);
-    }
-
-    if(name == "time.rtc")
-    {
-        string save_path;
-
-        auto suffix = Location::suffix(base_name);
-        auto base = Location::base(base_name.transform("\\", "/"));
-
-        const char *save = oeCore.batterySavesDirectoryPath.fileSystemRepresentation;
-        if (save)
-            save_path = { string(save).transform("\\", "/"), "/", base.trimRight(suffix, 1L), ".rtc" };
-        else
-            save_path = { base_name.trimRight(suffix, 1L), ".rtc" };
-
-        return vfs::fs::file::open(save_path, mode);
-    }
-
-    return {};
-}
-
 auto Program::loadFile(string location) -> vector<uint8_t>
 {
-    if(Location::suffix(location).downcase() == ".zip") {
-        Decode::ZIP archive;
-        if(archive.open(location)) {
-            for(auto& file : archive.file) {
-                auto type = Location::suffix(file.name).downcase();
-                if(type == ".sfc" || type == ".smc" || type == ".gb" || type == ".gbc" || type == ".bs" || type == ".st") {
-                    return archive.extract(file);
-                }
-            }
-        }
-    return {};
-    }
-    else if(Location::suffix(location).downcase() == ".7z") {
-        return LZMA::extract(location);
-    }
-    else {
-        return file::read(location);
-    }
+    return file::read(location);
 }
 
 auto Program::loadSuperFamicom(string location) -> bool
@@ -491,23 +402,6 @@ auto Program::loadSuperFamicom(string location) -> bool
         memory::copy(&superFamicom.firmware[0], &rom[offset], size);
         offset += size;
     }
-    return true;
-}
-
-auto Program::loadGameBoy(string location) -> bool {
-    vector<uint8_t> rom;
-    rom = loadFile(location);
-
-    if (rom.size() < 0x4000) return false;
-
-    auto heuristics = Heuristics::GameBoy(rom, location);
-    auto sha256 = Hash::SHA256(rom).digest();
-
-    gameBoy.manifest = heuristics.manifest();
-    gameBoy.document = BML::unserialize(gameBoy.manifest);
-    gameBoy.location = location;
-    gameBoy.program = rom;
-
     return true;
 }
 

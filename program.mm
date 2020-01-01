@@ -39,6 +39,7 @@ struct Program : Emulator::Platform {
     auto save() -> void;
 
     auto openRomSuperFamicom(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>;
+    auto loadSuperFamicomFirmware(string fwname) -> void;
     auto openRomGameBoy(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>;
     
     auto hackPatchMemory(vector<uint8_t>& data) -> void;
@@ -46,6 +47,9 @@ struct Program : Emulator::Platform {
     __weak BSNESGameCore *oeCore;
     string base_name;
     bool overscan = false;
+    
+    maybe<string> lastFailedBiosLoad;
+    bool failedLoadingAtLeastOneRequiredFile;
 
 public:
     struct Game {
@@ -126,11 +130,20 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
             result = openRomGameBoy(name, mode);
         }
     }
+    
+    if (required && !result) {
+        failedLoadingAtLeastOneRequiredFile = true;
+        NSLog(@"Failed loading file required by BSNES: %s", name.begin());
+    }
+    
     return result;
 }
 
 auto Program::load() -> void
 {
+    failedLoadingAtLeastOneRequiredFile = false;
+    lastFailedBiosLoad.reset();
+    
     emulator->unload();
     emulator->load();
 
@@ -264,38 +277,96 @@ auto Program::inputRumble(uint port, uint device, uint input, bool enable) -> vo
 
 auto Program::openRomSuperFamicom(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>
 {
-    if(name == "program.rom" && mode == vfs::file::mode::read)
-    {
+    if(name == "program.rom" && mode == vfs::file::mode::read) {
         return vfs::memory::file::open(superFamicom.program.data(), superFamicom.program.size());
     }
-
-    if(name == "data.rom" && mode == vfs::file::mode::read)
-    {
+    
+    if(name == "data.rom" && mode == vfs::file::mode::read) {
         return vfs::memory::file::open(superFamicom.data.data(), superFamicom.data.size());
     }
-
-    if(name == "expansion.rom" && mode == vfs::file::mode::read)
-    {
+    
+    if(name == "expansion.rom" && mode == vfs::file::mode::read) {
         return vfs::memory::file::open(superFamicom.expansion.data(), superFamicom.expansion.size());
     }
-
-    if(name == "save.ram")
-    {
+    
+    /* DSP3.rom */
+    if ((name == "upd7725.program.rom" || name == "upd7725.data.rom") && !superFamicom.firmware.size()) {
+        if(auto memory = superFamicom.document["game/board/memory(type=ROM,content=Program,architecture=uPD7725)"]) {
+            loadSuperFamicomFirmware(memory["identifier"].text().downcase());
+        }
+    }
+    if(name == "upd7725.program.rom" && mode == vfs::file::mode::read) {
+      if(superFamicom.firmware.size() == 0x2000) {
+        return vfs::memory::file::open(&superFamicom.firmware.data()[0x0000], 0x1800);
+      }
+    }
+    if(name == "upd7725.data.rom" && mode == vfs::file::mode::read) {
+      if(superFamicom.firmware.size() == 0x2000) {
+        return vfs::memory::file::open(&superFamicom.firmware.data()[0x1800], 0x0800);
+      }
+    }
+    
+    /* ST018.rom */
+    if ((name == "arm6.program.rom" || name == "arm6.data.rom") && !superFamicom.firmware.size()) {
+        if(auto memory = superFamicom.document["game/board/memory(type=ROM,content=Program,architecture=ARM6)"]) {
+            loadSuperFamicomFirmware(memory["identifier"].text().downcase());
+        }
+    }
+    if(name == "arm6.program.rom" && mode == vfs::file::mode::read) {
+        if(superFamicom.firmware.size() == 0x28000) {
+            return vfs::memory::file::open(&superFamicom.firmware.data()[0x00000], 0x20000);
+        }
+    }
+    if(name == "arm6.data.rom" && mode == vfs::file::mode::read) {
+        if(superFamicom.firmware.size() == 0x28000) {
+            return vfs::memory::file::open(&superFamicom.firmware.data()[0x20000], 0x08000);
+        }
+    }
+    
+    /* ST011.rom */
+    if ((name == "upd96050.program.rom" || name == "upd96050.data.rom") && !superFamicom.firmware.size()) {
+        if(auto memory = superFamicom.document["game/board/memory(type=ROM,content=Program,architecture=uPD96050)"]) {
+            loadSuperFamicomFirmware(memory["identifier"].text().downcase());
+        }
+    }
+    if(name == "upd96050.program.rom" && mode == vfs::file::mode::read) {
+      if(superFamicom.firmware.size() == 0xd000) {
+        return vfs::memory::file::open(&superFamicom.firmware.data()[0x0000], 0xc000);
+      }
+    }
+    if(name == "upd96050.data.rom" && mode == vfs::file::mode::read) {
+      if(superFamicom.firmware.size() == 0xd000) {
+        return vfs::memory::file::open(&superFamicom.firmware.data()[0xc000], 0x1000);
+      }
+    }
+    
+    if(name == "save.ram") {
         string save_path;
-
+        
         auto suffix = Location::suffix(base_name);
         auto base = Location::base(base_name.transform("\\", "/"));
-
+        
         const char *save = oeCore.batterySavesDirectoryPath.fileSystemRepresentation;
         if (save)
             save_path = { string(save).transform("\\", "/"), "/", base.trimRight(suffix, 1L), ".srm" };
         else
             save_path = { base_name.trimRight(suffix, 1L), ".srm" };
-
+        
         return vfs::fs::file::open(save_path, mode);
     }
 
     return {};
+}
+
+auto Program::loadSuperFamicomFirmware(string fwname) -> void
+{
+    string biosfn = string(fwname).append(".rom");
+    string path = oeCore.biosDirectoryPath.fileSystemRepresentation;
+    path.append("/", biosfn);
+    NSLog(@"attempting to load BIOS file %s", path.begin());
+    superFamicom.firmware = file::read(path);
+    if (superFamicom.firmware.size() == 0)
+        lastFailedBiosLoad = biosfn;
 }
 
 auto Program::openRomGameBoy(string name, vfs::file::mode mode) -> shared_pointer<vfs::file>
@@ -373,7 +444,7 @@ auto Program::loadSuperFamicom(string location) -> bool
     //superFamicom.patched = applyPatchIPS(rom, location);
     if((rom.size() & 0x7fff) == 512) {
         //remove copier header
-        memory::move(&rom[0], &rom[512], rom.size() - 512);
+        memory::move(&rom[0], &rom[512], (uint)(rom.size() - 512));
         rom.resize(rom.size() - 512);
     }
 

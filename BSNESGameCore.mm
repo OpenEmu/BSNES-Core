@@ -37,7 +37,6 @@
 
 /*
  * TODO
- *  - BIOS list + BIOS loading when available + load error if required BIOS not found
  *  - Multitap support
  *  - Mouse support
  *  - Cheats
@@ -96,6 +95,25 @@
     program->base_name = string(fullPath);
     program->load();
     
+    if (program->failedLoadingAtLeastOneRequiredFile) {
+        NSError *outErr;
+        if (program->lastFailedBiosLoad) {
+            NSString *missing = [NSString stringWithUTF8String:program->lastFailedBiosLoad.get().begin()];
+            NSError *outErr = [NSError
+                errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadROMError
+                userInfo:@{
+                    NSLocalizedDescriptionKey: @"Required chip dump file missing.",
+                    NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:
+                        @"To run this game you need the following file:\n"
+                        @"\"%@\"\n\n"
+                        @"Obtain this file, drag and drop onto the game library "
+                        @"window and try again.", missing]}];
+        }
+        if (error)
+            *error = outErr;
+        return NO;
+    }
+    
     emulator->connect(SuperFamicom::ID::Port::Controller1, SuperFamicom::ID::Device::Gamepad);
     emulator->connect(SuperFamicom::ID::Port::Controller2, SuperFamicom::ID::Device::Gamepad);
     
@@ -114,10 +132,12 @@
 
 - (BOOL)deserializeState:(NSData *)state withError:(NSError *__autoreleasing *)outError
 {
-    serializer s(static_cast<const uint8_t *>(state.bytes), state.length);
+    serializer s(static_cast<const uint8_t *>(state.bytes), (uint)state.length);
     BOOL res = emulator->unserialize(s);
     if (!res && outError)
-        *outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
+        *outError = [NSError
+            errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError
+            userInfo:@{ NSLocalizedDescriptionKey : @"The save state data could not be read." }];
     return res;
 }
 

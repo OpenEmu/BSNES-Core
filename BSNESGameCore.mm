@@ -166,7 +166,7 @@
         NSError *outErr;
         if (program->lastFailedBiosLoad) {
             NSString *missing = [NSString stringWithUTF8String:program->lastFailedBiosLoad.get().begin()];
-            NSError *outErr = [NSError
+            outErr = [NSError
                 errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadROMError
                 userInfo:@{
                     NSLocalizedDescriptionKey: @"Required chip dump file missing.",

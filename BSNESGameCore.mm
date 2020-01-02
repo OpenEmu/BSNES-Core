@@ -134,13 +134,11 @@
         _displayModes[key] = @(![currentVal boolValue]);
     else
         _displayModes[key] = currentVal;
-    [self configEmulator];
+    [self loadConfiguration];
 }
 
-- (void)configEmulator
+- (void)loadConfiguration
 {
-    emulator->configure("Hacks/Hotfixes", true);
-    emulator->configure("Hacks/PPU/Fast", true);
     [_displayModes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
         if ([key hasPrefix:@"bsnes/"]) {
             NSString *keyNoPrefix = [key substringFromIndex:@"bsnes/".length];
@@ -188,7 +186,10 @@
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     memset(pad, 0, sizeof(pad));
-    [self configEmulator];
+    
+    emulator->configure("Hacks/Hotfixes", true);
+    emulator->configure("Hacks/PPU/Fast", true);
+    [self loadConfiguration];
     
     const char *fullPath = path.fileSystemRepresentation;
     program->superFamicom.location = string(fullPath);

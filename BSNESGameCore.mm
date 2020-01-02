@@ -39,8 +39,6 @@
  * TODO
  *  - Multitap support
  *  - Mouse support
- *  - Add support for 64 bit pixel formats to the Metal renderer in OpenEmu and remove
- *    the 64 bit -> 32 bit pixel format conversion in Program::videoFrame()
  */
 
 
@@ -153,6 +151,7 @@
         }
     }];
     program->overscan = !((NSNumber *)_displayModes[@"hide_overscan"]).boolValue;
+    program->updateVideoPalette();
 }
 
 - (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled

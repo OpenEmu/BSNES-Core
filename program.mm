@@ -56,8 +56,11 @@ struct Program : Emulator::Platform {
     
     auto hackPatchMemory(vector<uint8_t>& data) -> void;
     
+    auto updateVideoPalette() -> void;
+    
     __weak BSNESGameCore *oeCore;
     string base_name;
+    
     bool overscan = false;
     
     maybe<string> lastFailedBiosLoad;
@@ -83,12 +86,15 @@ public:
         vector<uint8_t> expansion;
         vector<uint8_t> firmware;
     } superFamicom;
+    
+    uint32_t palette[0x8000];
 };
 
 Program::Program(BSNESGameCore *oeCore) : oeCore(oeCore)
 {
     // tell the emulator that all event callbacks should be invoked on this object
     Emulator::platform = this;
+    updateVideoPalette();
 }
 
 auto Program::save() -> void
@@ -202,13 +208,8 @@ auto Program::videoFrame(const uint16* data, uint pitch, uint width, uint height
     uint yoffset = 0;
     for (uint y=0; y<height; y++) {
         for (uint x=0; x<width; x++) {
-            uint32 color = *(data + yoffset + x) | (0xF << 15);
-            uint64 realcolor = emulator->color(color);
-            uint8 r, g, b;
-            b = (realcolor >> 8) & 0xFF;
-            g = (realcolor >> 24) & 0xFF;
-            r = (realcolor >> 40) & 0xFF;
-            *(outBuffer + y*OE_VIDEO_BUFFER_SIZE_W + x) = r + g * 0x100 + b * 0x10000;
+            uint16 color = *(data + yoffset + x);
+            *(outBuffer + y*OE_VIDEO_BUFFER_SIZE_W + x) = palette[color];
         }
         yoffset += pitch / sizeof(uint16);
     }
@@ -443,6 +444,35 @@ auto Program::hackPatchMemory(vector<uint8_t>& data) -> void
         if(data[0x4d6d] == 0x10) data[0x4d6d] = 0x80;
         if(data[0x4ded] == 0x10) data[0x4ded] = 0x80;
         if(data[0x4e9a] == 0x10) data[0x4e9a] = 0x80;
+    }
+}
+
+auto Program::updateVideoPalette() -> void
+{
+    static const uint8 gammaRamp_colorEmulation[32] = {
+      0x00, 0x01, 0x03, 0x06, 0x0a, 0x0f, 0x15, 0x1c,
+      0x24, 0x2d, 0x37, 0x42, 0x4e, 0x5b, 0x69, 0x78,
+      0x88, 0x90, 0x98, 0xa0, 0xa8, 0xb0, 0xb8, 0xc0,
+      0xc8, 0xd0, 0xd8, 0xe0, 0xe8, 0xf0, 0xf8, 0xff,
+    };
+    static const uint8 gammaRamp_linear[32] = {
+      0x00, 0x08, 0x10, 0x18, 0x21, 0x29, 0x31, 0x39,
+      0x42, 0x4a, 0x52, 0x5a, 0x63, 0x6b, 0x73, 0x7b,
+      0x84, 0x8c, 0x94, 0x9c, 0xa5, 0xad, 0xb5, 0xbd,
+      0xc6, 0xce, 0xd6, 0xde, 0xe7, 0xef, 0xf7, 0xff,
+    };
+    const uint8 *gammaRamp = gammaRamp_linear;
+    if (::SuperFamicom::configuration.video.colorEmulation)
+        gammaRamp = gammaRamp_colorEmulation;
+    
+    for (uint16_t color = 0; color < 0x8000; color++) {
+        uint16 r = (color >>  0) & 31;
+        uint16 g = (color >>  5) & 31;
+        uint16 b = (color >> 10) & 31;
+        palette[color] =
+             ((uint32_t)gammaRamp[r])       +
+            (((uint32_t)gammaRamp[g]) << 8) +
+            (((uint32_t)gammaRamp[b]) << 16);
     }
 }
 

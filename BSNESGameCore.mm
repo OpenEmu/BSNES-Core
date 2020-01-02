@@ -80,8 +80,7 @@
         { @"bsnes/Video/ColorEmulation",        [NSNumber class], @YES },
         { @"bsnes/Hacks/PPU/NoSpriteLimit",     [NSNumber class], @YES },
         { @"bsnes/Hacks/PPU/Mode7/Scale",       [NSString class], @"1" },
-        { @"hide_overscan",                     [NSNumber class], @NO  },
-        { nil, nil, nil }};
+        { @"hide_overscan",                     [NSNumber class], @NO  }};
     
     /* validate the defaults to avoid crashes caused by users playing
      * around where they shouldn't */

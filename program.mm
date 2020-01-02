@@ -327,18 +327,27 @@ auto Program::openRomSuperFamicom(string name, vfs::file::mode mode) -> shared_p
     }
     
     if(name == "save.ram") {
-        string save_path;
+        NSURL *gameFn = [NSURL fileURLWithFileSystemRepresentation:base_name.begin() isDirectory:NO relativeToURL:nil];
+        NSString *gameBasename = [gameFn lastPathComponent];
+        NSString *gameBasenameNoExt = [gameBasename stringByDeletingPathExtension];
+        NSURL *batterySavesDir = [NSURL fileURLWithPath:oeCore.batterySavesDirectoryPath];
+        NSURL *savePath = [batterySavesDir URLByAppendingPathComponent:[gameBasenameNoExt stringByAppendingPathExtension:@"srm"]];
         
-        auto suffix = Location::suffix(base_name);
-        auto base = Location::base(base_name.transform("\\", "/"));
+        if (!nall::file::exists(savePath.fileSystemRepresentation)) {
+            /* attempt importing an old save file from the Higan core */
+            NSURL *higanBattSaveDir = [NSURL fileURLWithPath:@"../../Higan/Super Famicom/" relativeToURL:batterySavesDir];
+            NSURL *higanBundleDir = [higanBattSaveDir URLByAppendingPathComponent:gameBasename isDirectory:YES];
+            NSURL *higanSavePath = [higanBundleDir URLByAppendingPathComponent:@"save.ram"];
+            if (nall::file::copy(higanSavePath.fileSystemRepresentation, savePath.fileSystemRepresentation)) {
+                NSLog(@"Imported Higan save.ram file %@", higanSavePath.path);
+            } else {
+                NSLog(@"No existing save.ram file found");
+            }
+        } else {
+            NSLog(@"Opening save.ram file %@", savePath.path);
+        }
         
-        const char *save = oeCore.batterySavesDirectoryPath.fileSystemRepresentation;
-        if (save)
-            save_path = { string(save).transform("\\", "/"), "/", base.trimRight(suffix, 1L), ".srm" };
-        else
-            save_path = { base_name.trimRight(suffix, 1L), ".srm" };
-        
-        return vfs::fs::file::open(save_path, mode);
+        return vfs::fs::file::open(savePath.fileSystemRepresentation, mode);
     }
 
     return {};
@@ -349,7 +358,7 @@ auto Program::loadSuperFamicomFirmware(string fwname) -> void
     string biosfn = string(fwname).append(".rom");
     string path = oeCore.biosDirectoryPath.fileSystemRepresentation;
     path.append("/", biosfn);
-    NSLog(@"attempting to load BIOS file %s", path.begin());
+    NSLog(@"Attempting to load BIOS file %s", path.begin());
     superFamicom.firmware = file::read(path);
     if (superFamicom.firmware.size() == 0)
         lastFailedBiosLoad = biosfn;

@@ -76,9 +76,8 @@
     } defaultValues[] = {
         { @"bsnes/Video/BlurEmulation",         [NSNumber class], @NO  },
         { @"bsnes/Video/ColorEmulation",        [NSNumber class], @YES },
-        { @"bsnes/Hacks/PPU/NoSpriteLimit",     [NSNumber class], @YES },
-        { @"bsnes/Hacks/PPU/Mode7/Scale",       [NSString class], @"1" },
-        { @"hide_overscan",                     [NSNumber class], @NO  }};
+        { @"bsnes/Hacks/PPU/NoSpriteLimit",     [NSNumber class], @NO },
+        { @"bsnes/Hacks/PPU/Mode7/Scale",       [NSString class], @"1" }};
     
     /* validate the defaults to avoid crashes caused by users playing
      * around where they shouldn't */
@@ -107,7 +106,6 @@
     return @[
         OptionToggleable(@"Blur Emulation", @"bsnes/Video/BlurEmulation"),
         OptionToggleable(@"Color Emulation", @"bsnes/Video/ColorEmulation"),
-        OptionToggleable(@"Hide Overscan", @"hide_overscan"),
         OEDisplayMode_SeparatorItem(),
         OEDisplayMode_Label(@"HD Mode 7"),
         OptionWithValue(@"240p (disabled)", @"bsnes/Hacks/PPU/Mode7/Scale", @"1"),
@@ -148,7 +146,6 @@
                 emulator->configure(keyNoPrefix.UTF8String, [obj UTF8String]);
         }
     }];
-    program->overscan = !((NSNumber *)_displayModes[@"hide_overscan"]).boolValue;
     program->updateVideoPalette();
 }
 

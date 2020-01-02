@@ -27,6 +27,11 @@ struct Program;
 static Program *program = nullptr;
 
 
+#define OE_MODE7_MAX_HIRES         (8)
+#define OE_VIDEO_BUFFER_SIZE_W     (512 * OE_MODE7_MAX_HIRES)
+#define OE_VIDEO_BUFFER_SIZE_H     (480 * OE_MODE7_MAX_HIRES)
+
+
 #pragma mark - Platform Object
 
 struct Program : Emulator::Platform {
@@ -189,6 +194,9 @@ auto Program::videoFrame(const uint16* data, uint pitch, uint width, uint height
         data += 8 * (pitch >> 1) * multiplier;
         height -= 16 * multiplier;
     }
+    // avoid buffer overflows
+    width = min(OE_VIDEO_BUFFER_SIZE_W, width);
+    height = min(OE_VIDEO_BUFFER_SIZE_H, height);
     core->screenRect = OEIntRectMake(0, 0, width, height);
     
     uint yoffset = 0;
@@ -200,7 +208,7 @@ auto Program::videoFrame(const uint16* data, uint pitch, uint width, uint height
             b = (realcolor >> 8) & 0xFF;
             g = (realcolor >> 24) & 0xFF;
             r = (realcolor >> 40) & 0xFF;
-            *(outBuffer + y*512 + x) = r + g * 0x100 + b * 0x10000;
+            *(outBuffer + y*OE_VIDEO_BUFFER_SIZE_W + x) = r + g * 0x100 + b * 0x10000;
         }
         yoffset += pitch / sizeof(uint16);
     }

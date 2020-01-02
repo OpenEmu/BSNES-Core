@@ -46,7 +46,7 @@
 
 @implementation BSNESGameCore {
     NSMutableSet <NSString *> *_activeCheats;
-    NSMutableDictionary <NSString *, NSNumber *> *_displayModes;
+    NSMutableDictionary <NSString *, id> *_displayModes;
 }
 
 - (id)init
@@ -69,15 +69,31 @@
 #pragma mark - Configuration & Cheats
 
 
-- (void)setDisplayModeInfo:(NSDictionary<NSString *,id> *)displayModeInfo
+- (void)setDisplayModeInfo:(NSDictionary<NSString *, id> *)displayModeInfo
 {
-    _displayModes = [@{
-        @"bsnes/Video/BlurEmulation": @NO,
-        @"bsnes/Video/ColorEmulation": @YES,
-        @"bsnes/Hacks/PPU/NoSpriteLimit": @NO,
-        @"hide_overscan": @YES
-    } mutableCopy];
-    [_displayModes addEntriesFromDictionary:displayModeInfo];
+    const struct {
+        NSString *key;
+        Class valueClass;
+        id defaultValue;
+    } defaultValues[] = {
+        { @"bsnes/Video/BlurEmulation",         [NSNumber class], @NO  },
+        { @"bsnes/Video/ColorEmulation",        [NSNumber class], @YES },
+        { @"bsnes/Hacks/PPU/NoSpriteLimit",     [NSNumber class], @YES },
+        { @"bsnes/Hacks/PPU/Mode7/Scale",       [NSString class], @"1" },
+        { @"hide_overscan",                     [NSNumber class], @NO  },
+        { nil, nil, nil }};
+    
+    /* validate the defaults to avoid crashes caused by users playing
+     * around where they shouldn't */
+    _displayModes = [[NSMutableDictionary alloc] init];
+    int n = sizeof(defaultValues)/sizeof(defaultValues[0]);
+    for (int i=0; i<n; i++) {
+        id thisPref = displayModeInfo[defaultValues[i].key];
+        if ([thisPref isKindOfClass:defaultValues[i].valueClass])
+            _displayModes[defaultValues[i].key] = thisPref;
+        else
+            _displayModes[defaultValues[i].key] = defaultValues[i].defaultValue;
+    }
 }
 
 - (NSDictionary<NSString *,id> *)displayModeInfo
@@ -87,24 +103,40 @@
 
 - (NSArray<NSDictionary<NSString *,id> *> *)displayModes
 {
+    #define OptionToggleable(n, k) \
+        OEDisplayMode_OptionToggleableWithState(n, k, _displayModes[k])
+    #define OptionWithValue(n, k, v) \
+        OEDisplayMode_OptionWithStateValue(n, k, @([_displayModes[k] isEqual:v]), v)
     return @[
-        OEDisplayMode_OptionToggleableWithState(@"Blur Emulation",
-            @"bsnes/Video/BlurEmulation", _displayModes[@"bsnes/Video/BlurEmulation"]),
-        OEDisplayMode_OptionToggleableWithState(@"Color Emulation",
-            @"bsnes/Video/ColorEmulation", _displayModes[@"bsnes/Video/ColorEmulation"]),
-        OEDisplayMode_OptionToggleableWithState(@"Hide Overscan",
-            @"hide_overscan", _displayModes[@"hide_overscan"]),
+        OptionToggleable(@"Blur Emulation", @"bsnes/Video/BlurEmulation"),
+        OptionToggleable(@"Color Emulation", @"bsnes/Video/ColorEmulation"),
+        OptionToggleable(@"Hide Overscan", @"hide_overscan"),
         OEDisplayMode_SeparatorItem(),
-        OEDisplayMode_OptionToggleableWithState(@"Disable Sprite Limit (requires reset)",
-            @"bsnes/Hacks/PPU/NoSpriteLimit", _displayModes[@"bsnes/Hacks/PPU/NoSpriteLimit"]),
+        OEDisplayMode_Label(@"HD Mode 7"),
+        OptionWithValue(@"240p (disabled)", @"bsnes/Hacks/PPU/Mode7/Scale", @"1"),
+        OptionWithValue(@"480p", @"bsnes/Hacks/PPU/Mode7/Scale", @"2"),
+        OptionWithValue(@"720p", @"bsnes/Hacks/PPU/Mode7/Scale", @"3"),
+        OptionWithValue(@"960p", @"bsnes/Hacks/PPU/Mode7/Scale", @"4"),
+        OptionWithValue(@"1200p", @"bsnes/Hacks/PPU/Mode7/Scale", @"5"),
+        OptionWithValue(@"1440p", @"bsnes/Hacks/PPU/Mode7/Scale", @"6"),
+        OptionWithValue(@"1680p", @"bsnes/Hacks/PPU/Mode7/Scale", @"7"),
+        OptionWithValue(@"1920p", @"bsnes/Hacks/PPU/Mode7/Scale", @"8"),
+        OEDisplayMode_SeparatorItem(),
+        OptionToggleable(@"Disable Sprite Limit (requires reset)", @"bsnes/Hacks/PPU/NoSpriteLimit"),
     ];
+    #undef OptionToggleable
+    #undef OptionWithValue
 }
 
 - (void)changeDisplayWithMode:(NSString *)displayMode
 {
-    NSString *key = OEDisplayModeListGetPrefKeyFromModeName(self.displayModes, displayMode);
-    NSNumber *currentVal = _displayModes[key];
-    _displayModes[key] = @(!(currentVal.boolValue));
+    NSString *key;
+    id currentVal;
+    OEDisplayModeListGetPrefKeyValueFromModeName(self.displayModes, displayMode, &key, &currentVal);
+    if ([currentVal isKindOfClass:[NSNumber class]])
+        _displayModes[key] = @(![currentVal boolValue]);
+    else
+        _displayModes[key] = currentVal;
     [self configEmulator];
 }
 
@@ -112,13 +144,16 @@
 {
     emulator->configure("Hacks/Hotfixes", true);
     emulator->configure("Hacks/PPU/Fast", true);
-    [_displayModes enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop) {
+    [_displayModes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
         if ([key hasPrefix:@"bsnes/"]) {
             NSString *keyNoPrefix = [key substringFromIndex:@"bsnes/".length];
-            emulator->configure(keyNoPrefix.UTF8String, (bool)(obj.boolValue));
+            if ([obj isKindOfClass:[NSNumber class]])
+                emulator->configure(keyNoPrefix.UTF8String, (bool)[obj boolValue]);
+            else if ([obj isKindOfClass:[NSString class]])
+                emulator->configure(keyNoPrefix.UTF8String, [obj UTF8String]);
         }
     }];
-    program->overscan = !(_displayModes[@"hide_overscan"].boolValue);
+    program->overscan = !((NSNumber *)_displayModes[@"hide_overscan"]).boolValue;
 }
 
 - (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
@@ -307,7 +342,7 @@
 
 - (OEIntSize)bufferSize
 {
-    return OEIntSizeMake(512, 480);
+    return OEIntSizeMake(OE_VIDEO_BUFFER_SIZE_W, OE_VIDEO_BUFFER_SIZE_H);
 }
 
 - (OEIntSize)aspectSize

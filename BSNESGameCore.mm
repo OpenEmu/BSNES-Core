@@ -54,6 +54,7 @@
     program = new Program(self);
     _activeCheats = [[NSMutableSet alloc] init];
     _displayModes = [[NSMutableDictionary alloc] init];
+    screenRect = OEIntRectMake(0, 0, 256, 224);
     return self;
 }
 

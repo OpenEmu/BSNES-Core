@@ -17,3 +17,5 @@ xcuserdata
 profile
 *.moved-aside
 icon?
+DerivedData
+build/

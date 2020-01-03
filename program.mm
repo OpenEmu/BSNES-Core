@@ -406,6 +406,8 @@ auto Program::loadSuperFamicom(string location) -> bool
     hackPatchMemory(rom);
     superFamicom.document = BML::unserialize(superFamicom.manifest);
     superFamicom.location = location;
+    
+    NSLog(@"Region of game: %s", superFamicom.region.begin());
 
     uint offset = 0;
     if(auto size = heuristics.programRomSize()) {

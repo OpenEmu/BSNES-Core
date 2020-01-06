@@ -189,6 +189,10 @@
     emulator->configure("Hacks/PPU/Fast", true);
     [self loadConfiguration];
     
+    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
+    NSAssert(batterySavesDirectory.length > 0, @"no battery save directory!?");
+    [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
+    
     const char *fullPath = path.fileSystemRepresentation;
     program->superFamicom.location = string(fullPath);
     program->base_name = string(fullPath);
@@ -216,10 +220,6 @@
     emulator->connect(SuperFamicom::ID::Port::Controller1, SuperFamicom::ID::Device::Gamepad);
     emulator->connect(SuperFamicom::ID::Port::Controller2, SuperFamicom::ID::Device::Gamepad);
     [self loadCheats];
-    
-    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-    NSAssert(batterySavesDirectory.length > 0, @"no battery save directory!?");
-    [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
     
     return YES;
 }

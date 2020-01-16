@@ -349,9 +349,8 @@
 - (OEIntSize)aspectSize
 {
     if (!(program->overscan)) {
-        /* Overscan hiding removes the top and bottom 8 pixels.
-         * This fraction is equivalent to (256 * 8 / 7) / 224 */
-        return OEIntSizeMake(64, 49);
+        /* Overscan hiding removes the top and bottom 8 pixels. */
+        return OEIntSizeMake(256 * 8, 224 * 7);
     }
     return OEIntSizeMake(8, 7);
 }

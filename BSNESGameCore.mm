@@ -236,8 +236,12 @@
     BOOL res = emulator->unserialize(s);
     if (!res && outError)
         *outError = [NSError
-            errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError
-            userInfo:@{ NSLocalizedDescriptionKey : @"The save state data could not be read." }];
+            errorWithDomain:OEGameCoreErrorDomain
+            code:OEGameCoreCouldNotLoadStateError
+            userInfo:@{
+                NSLocalizedDescriptionKey: @"The save state data could not be read.",
+                NSLocalizedRecoverySuggestionErrorKey: @"When the BSNES core is updated, existing save states may stop working. This is normal and unavoidable.\n\nPlease use in-game saves as much as possible instead."
+            }];
     return res;
 }
 

@@ -637,13 +637,6 @@
 		0167A46323B9843600F0B36E /* gb_struct_def.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gb_struct_def.h; sourceTree = "<group>"; };
 		0167A46423B9843600F0B36E /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		0167A46523B9843600F0B36E /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		0167A4AB23B9843600F0B36E /* program.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = program.cpp; sourceTree = "<group>"; };
-		0167A4AC23B9843600F0B36E /* libretro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libretro.h; sourceTree = "<group>"; };
-		0167A4AD23B9843600F0B36E /* resources.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = resources.hpp; sourceTree = "<group>"; };
-		0167A4AE23B9843600F0B36E /* libretro.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = libretro.cpp; sourceTree = "<group>"; };
-		0167A4AF23B9843600F0B36E /* link.T */ = {isa = PBXFileReference; lastKnownFileType = text; path = link.T; sourceTree = "<group>"; };
-		0167A4B123B9843600F0B36E /* Android.mk */ = {isa = PBXFileReference; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
-		0167A4B223B9843600F0B36E /* Application.mk */ = {isa = PBXFileReference; lastKnownFileType = text; path = Application.mk; sourceTree = "<group>"; };
 		0167A4CD23B9843600F0B36E /* cheat.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cheat.hpp; sourceTree = "<group>"; };
 		0167A4CF23B9843600F0B36E /* writable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = writable.hpp; sourceTree = "<group>"; };
 		0167A4D023B9843600F0B36E /* readable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = readable.hpp; sourceTree = "<group>"; };
@@ -1292,7 +1285,6 @@
 				0167A30523B9843600F0B36E /* sfc */,
 				0167A3F723B9843600F0B36E /* processor */,
 				0167A43D23B9843600F0B36E /* gb */,
-				0167A4A923B9843600F0B36E /* target-libretro */,
 				0167A4CC23B9843600F0B36E /* emulator */,
 				0167A4DD23B9843600F0B36E /* lzma */,
 			);
@@ -2047,28 +2039,6 @@
 				0167A46323B9843600F0B36E /* gb_struct_def.h */,
 			);
 			path = Core;
-			sourceTree = "<group>";
-		};
-		0167A4A923B9843600F0B36E /* target-libretro */ = {
-			isa = PBXGroup;
-			children = (
-				0167A4AB23B9843600F0B36E /* program.cpp */,
-				0167A4AC23B9843600F0B36E /* libretro.h */,
-				0167A4AD23B9843600F0B36E /* resources.hpp */,
-				0167A4AE23B9843600F0B36E /* libretro.cpp */,
-				0167A4AF23B9843600F0B36E /* link.T */,
-				0167A4B023B9843600F0B36E /* jni */,
-			);
-			path = "target-libretro";
-			sourceTree = "<group>";
-		};
-		0167A4B023B9843600F0B36E /* jni */ = {
-			isa = PBXGroup;
-			children = (
-				0167A4B123B9843600F0B36E /* Android.mk */,
-				0167A4B223B9843600F0B36E /* Application.mk */,
-			);
-			path = jni;
 			sourceTree = "<group>";
 		};
 		0167A4CC23B9843600F0B36E /* emulator */ = {

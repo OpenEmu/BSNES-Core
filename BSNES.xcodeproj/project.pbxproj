@@ -72,8 +72,6 @@
 		0167A56D23B985E600F0B36E /* lzma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A4E423B9843600F0B36E /* lzma.cpp */; };
 		0167A59523B985F000F0B36E /* emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0167A4D323B9843600F0B36E /* emulator.cpp */; };
 		0167A59C23B9861000F0B36E /* libco.c in Sources */ = {isa = PBXBuildFile; fileRef = 0167A53B23B9843700F0B36E /* libco.c */; };
-		8230C69910AFBC3A00412F24 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 8230C69810AFBC3A00412F24 /* dsa_pub.pem */; };
-		8230C6AE10AFBCE500412F24 /* config.yaml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8230C6AA10AFBCC700412F24 /* config.yaml */; };
 		82B9198810150FA9007BD6DB /* bsnes.icns in Resources */ = {isa = PBXBuildFile; fileRef = 82B9198710150FA9007BD6DB /* bsnes.icns */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
@@ -105,7 +103,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				8230C6AE10AFBCE500412F24 /* config.yaml in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -747,8 +744,6 @@
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		089C167FFE841241C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		8230C69810AFBC3A00412F24 /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
-		8230C6AA10AFBCC700412F24 /* config.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config.yaml; sourceTree = "<group>"; };
 		826FE0F31014D8930023A8E9 /* BSNESGameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSNESGameCore.h; sourceTree = "<group>"; };
 		826FE0F41014D8930023A8E9 /* BSNESGameCore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BSNESGameCore.mm; sourceTree = "<group>"; };
 		82B9198710150FA9007BD6DB /* bsnes.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = bsnes.icns; sourceTree = "<group>"; };
@@ -2198,7 +2193,6 @@
 			isa = PBXGroup;
 			children = (
 				08FB77AFFE84173DC02AAC07 /* Classes */,
-				32C88E010371C26100C91783 /* Other Sources */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
@@ -2223,7 +2217,6 @@
 			children = (
 				013D75C223BCEF0100D74AD3 /* Database */,
 				0113624223BA377D00BC181F /* system */,
-				8230C69810AFBC3A00412F24 /* dsa_pub.pem */,
 				82B9198710150FA9007BD6DB /* bsnes.icns */,
 				8D5B49B7048680CD000E48DA /* Info.plist */,
 				089C167DFE841241C02AAC07 /* InfoPlist.strings */,
@@ -2269,14 +2262,6 @@
 				8D5B49B6048680CD000E48DA /* BSNES.oecoreplugin */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		32C88E010371C26100C91783 /* Other Sources */ = {
-			isa = PBXGroup;
-			children = (
-				8230C6AA10AFBCC700412F24 /* config.yaml */,
-			);
-			name = "Other Sources";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2338,7 +2323,6 @@
 				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
 				82B9198810150FA9007BD6DB /* bsnes.icns in Resources */,
 				013D75CA23BCEF0100D74AD3 /* Super Famicom.bml in Resources */,
-				8230C69910AFBC3A00412F24 /* dsa_pub.pem in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

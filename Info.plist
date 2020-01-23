@@ -84,16 +84,14 @@
 	<key>OEGameCorePlayerCount</key>
 	<string>2</string>
 	<key>OEProjectURL</key>
-	<string>http://byuu.org/bsnes/</string>
+	<string>https://byuu.org/bsnes</string>
 	<key>OESystemIdentifiers</key>
 	<array>
 		<string>openemu.system.snes</string>
 	</array>
 	<key>SUEnableAutomaticChecks</key>
-	<string>0</string>
+	<string>1</string>
 	<key>SUFeedURL</key>
-	<string></string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>dsa_pub.pem</string>
+	<string>https://raw.github.com/OpenEmu/OpenEmu-Update/master/bsnes_appcast.xml</string>
 </dict>
 </plist>

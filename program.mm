@@ -41,7 +41,7 @@ struct Program : Emulator::Platform {
     auto open(uint id, string name, vfs::file::mode mode, bool required) -> shared_pointer<vfs::file> override;
     auto load(uint id, string name, string type, vector<string> options = {}) -> Emulator::Platform::Load override;
     auto videoFrame(const uint16* data, uint pitch, uint width, uint height, uint scale) -> void override;
-    auto audioFrame(const float* samples, uint channels) -> void override;
+    auto audioFrame(const double* samples, uint channels) -> void override;
     auto inputPoll(uint port, uint device, uint input) -> int16 override;
     auto inputRumble(uint port, uint device, uint input, bool enable) -> void override;
     
@@ -197,7 +197,7 @@ static int16_t d2i16(double v)
     return int16_t(floor(v + 0.5));
 }
 
-auto Program::audioFrame(const float* samples, uint channels) -> void
+auto Program::audioFrame(const double* samples, uint channels) -> void
 {
     int16_t data[2];
     data[0] = d2i16(samples[0]);
@@ -246,7 +246,18 @@ auto Program::openRomSuperFamicom(string name, vfs::file::mode mode) -> shared_p
     if(name == "expansion.rom" && mode == vfs::file::mode::read) {
         return vfs::memory::file::open(superFamicom.expansion.data(), superFamicom.expansion.size());
     }
-    
+
+    if(name == "msu1/data.rom")
+    {
+        return vfs::fs::file::open({Location::notsuffix(superFamicom.location), ".msu"}, mode);
+    }
+
+    if(name.match("msu1/track*.pcm"))
+    {
+        name.trimLeft("msu1/track", 1L);
+        return vfs::fs::file::open({Location::notsuffix(superFamicom.location), name}, mode);
+    }
+
     /* DSP3.rom */
     if ((name == "upd7725.program.rom" || name == "upd7725.data.rom") && !superFamicom.firmware.size()) {
         if(auto memory = superFamicom.document["game/board/memory(type=ROM,content=Program,architecture=uPD7725)"]) {

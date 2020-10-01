@@ -749,7 +749,7 @@
 		82B9198710150FA9007BD6DB /* bsnes.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = bsnes.icns; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* BSNES.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BSNES.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C6480FFB1364B2E10094FA33 /* OESNESSystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OESNESSystemResponderClient.h; path = ../OpenEmu/SuperNES/OESNESSystemResponderClient.h; sourceTree = "<group>"; };
+		C6480FFB1364B2E10094FA33 /* OESNESSystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OESNESSystemResponderClient.h; path = ../OpenEmu/SystemPlugins/SuperNES/OESNESSystemResponderClient.h; sourceTree = "<group>"; };
 		C6D120EB1711307900E868A8 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEmuBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E65807B2D6F200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
